@@ -24,66 +24,55 @@ using namespace vfd;
 enum Item : uint8_t { THEME, CLOCK, UNITS, LANG, BRIGHT, CITY, CYCLE, HOLIDAYS, NIGHT, PAGES, HELP, WIFI, ABOUT, ITEM_COUNT };
 
 struct ItemText {
-  const char *en, *tr;            // in the list
-  const char *what_en, *what_tr;  // above the value
+  const char *en;       // in the list
+  const char *what_en;  // above the value
 };
 
 static const ItemText ITEMS[ITEM_COUNT] = {
-  { "THEME", "TEMA", "LOOK OF EVERY PAGE", "TÜM SAYFALARIN GÖRÜNÜMÜ" },
-  { "CLOCK", "SAAT", "CLOCK STYLE", "SAAT BİÇİMİ" },
-  { "UNITS", "BİRİM", "TEMPERATURE", "SICAKLIK" },
-  { "LANGUAGE", "DİL", "TEXT ON SCREEN", "EKRANDAKİ YAZILAR" },
-  { "BRIGHTNESS", "PARLAKLIK", "SCREEN LIGHT", "EKRAN IŞIĞI" },
-  { "CITY", "ŞEHİR", "WEATHER AND TIME ZONE", "HAVA DURUMU VE SAAT DİLİMİ" },
-  { "AUTO PAGE", "OTO SAYFA", "AMBIENT PAGES TURN BY THEMSELVES", "SAHNELER KENDİLİĞİNDEN DÖNER" },
-  { "HOLIDAYS", "YILBAŞI", "WINTER LIGHTS ON THE SNOW PAGE", "KAR SAYFASINDA YILBAŞI IŞIKLARI" },
-  { "NIGHT DIM", "GECE KISMA", "SCREEN DIMS AT NIGHT", "EKRAN GECE KISILIR" },
-  { "PAGES", "SAYFALAR", "TAP THE NAME: SHOW OR HIDE", "İSME DOKUN: GÖSTER YA DA GİZLE" },
-  { "HELP", "YARDIM", nullptr, nullptr },
-  { "WI-FI", "WI-FI", nullptr, nullptr },
-  { "ABOUT", "HAKKINDA", nullptr, nullptr },
+  { N_("THEME"), N_("LOOK OF EVERY PAGE") },
+  { N_("CLOCK"), N_("CLOCK STYLE") },
+  { N_("UNITS"), N_("TEMPERATURE") },
+  { N_("LANGUAGE"), N_("TEXT ON SCREEN") },
+  { N_("BRIGHTNESS"), N_("SCREEN LIGHT") },
+  { N_("CITY"), N_("WEATHER AND TIME ZONE") },
+  { N_("AUTO PAGE"), N_("AMBIENT PAGES TURN BY THEMSELVES") },
+  { N_("HOLIDAYS"), N_("WINTER LIGHTS ON THE SNOW PAGE") },
+  { N_("NIGHT DIM"), N_("SCREEN DIMS AT NIGHT") },
+  { N_("PAGES"), N_("TAP THE NAME: SHOW OR HIDE") },
+  { N_("HELP"), nullptr },
+  { N_("WI-FI"), nullptr },
+  { N_("ABOUT"), nullptr },
 };
 
 // The tutorial, one screen per page of it. Lines fit the panel (33 glyphs at size 2).
 struct HelpPage {
-  const char *title_en, *title_tr;
-  const char *en[4], *tr[4];
+  const char *title;
+  const char *en[4];
 };
 
 static const HelpPage HELP_PAGES[] = {
-  { "GESTURES", "HAREKETLER",
-    { "SWIPE LEFT/RIGHT: NEXT PAGE", "SWIPE UP/DOWN: VOLUME", "TAP OR HOLD THINGS ON SCREEN", "IN AN APP: SWIPE SIDEWAYS = BACK" },
-    { "SAĞA/SOLA KAYDIR: SAYFA", "YUKARI/AŞAĞI KAYDIR: SES", "EKRANDAKİLERE DOKUN, BASILI TUT", "UYGULAMADA: YANA KAYDIR = GERİ" } },
-  { "CLOCK", "SAAT",
-    { "TAP THE BELL: ALARM ON/OFF", "TAP ALARM HOURS: +1 HOUR", "TAP ALARM MINUTES: +5 MIN", "HOLD: ALARM ON/OFF" },
-    { "ZİLE DOKUN: ALARM AÇ/KAPA", "ALARM SAATİNE DOKUN: +1 SAAT", "DAKİKAYA DOKUN: +5 DAKİKA", "BASILI TUT: ALARM AÇ/KAPA" } },
-  { "RADIO", "RADYO",
-    { "TAP: PLAY / STOP", "GENRE KEY: PLAY, AGAIN: NEXT", "HOLD THE EQUALIZER: NEW LOOK", "HOLD THE DANCERS: CHANGE" },
-    { "DOKUN: ÇAL / DURDUR", "TÜR: ÇAL, TEKRAR: SONRAKİ", "EKOLAYZIRA BASILI TUT: DEĞİŞ", "DANSÇILARA BASILI TUT: DEĞİŞ" } },
-  { "TIMERS", "SAYAÇLAR",
-    { "TAP: START / PAUSE", "HOLD: RESET", "TIMER KEYS: ADD MINUTES", "HOURGLASS: TILT TO POUR" },
-    { "DOKUN: BAŞLAT / DURAKLAT", "BASILI TUT: SIFIRLA", "SAYAÇ TUŞLARI: DAKİKA EKLE", "KUM SAATİ: EĞ, KUM AKSIN" } },
-  { "SCENES", "SAHNELER",
-    { "FISH TANK: TAP TO FEED", "FIREPLACE: TAP, CAT WAKES", "LIGHTHOUSE: TAP, BIG WAVE", "LAVA LAMP: TAP, NEW COLORS" },
-    { "AKVARYUM: DOKUN, YEM AT", "ŞÖMİNE: DOKUN, KEDİ UYANSIN", "FENER: DOKUN, BÜYÜK DALGA", "LAV LAMBASI: DOKUN, YENİ RENK" } },
-  { "MORE SCENES", "DAHA FAZLA",
-    { "SNOW: TAP OR SHAKE TO STIR", "SNOW: HOLD FOR THE GLOBE", "SHIP: TAP THE WATER", "TILT: WATER AND SAND MOVE" },
-    { "KAR: DOKUN YA DA SALLA", "KAR: BASILI TUT, KAR KÜRESİ", "GEMİ: SUYA DOKUN", "EĞ: SU VE KUM AKAR" } },
-  { "TOOLS", "ARAÇLAR",
-    { "TAP A TILE: OPEN THE APP", "SWIPE LEFT/RIGHT: BACK TO TILES", "LEVEL: TAP SETS ZERO, HOLD CLEARS", "COIN: TAP OR SHAKE TO FLIP" },
-    { "KUTUYA DOKUN: UYGULAMA AÇILIR", "SAĞA/SOLA KAYDIR: KUTULARA DÖN", "TERAZİ: DOKUN SIFIR, BASILI SİL", "YAZI-TURA: DOKUN YA DA SALLA" } },
-  { "MORE TOOLS", "DAHA FAZLA ARAÇ",
-    { "BREATHE: TAP START, HOLD BEEP", "SCORE: TAP +1, HOLD -1", "LAMP: TAP COLOR, UP/DOWN LIGHT", "SETTINGS > PAGES: HIDE PAGES" },
-    { "NEFES: DOKUN BAŞLAT, BASILI BİP", "SKOR: DOKUN +1, BASILI TUT -1", "LAMBA: DOKUN RENK, KAYDIR IŞIK", "AYARLAR > SAYFALAR: GİZLE" } },
-  { "PLAY", "OYUN",
-    { "KEEPER: TAP A LANE, SAVE SHIPS", "TAP LIGHTS THAT LANE AT ONCE", "HOLD: PAUSE. NO SWIPES IN PLAY", "PAUSE/TITLE: SWIPE SIDEWAYS=BACK" },
-    { "FENER: ŞERİDE DOKUN, GEMİ KURTAR", "DOKUN: O ŞERİT HEMEN YANAR", "BASILI TUT: DURAKLAT", "DURAK/BAŞLIK: YANA KAYDIR=GERİ" } },
-  { "MORE PLAY", "DAHA FAZLA OYUN",
-    { "21: 10 HANDS, MOST WINS TAKES IT", "KNOCK ONCE: STAND, TWICE: HIT", "RUNNER: TOP JUMPS, BOTTOM DUCKS", "SWIPE SIDEWAYS: BACK TO TILES" },
-    { "21: 10 EL, EN ÇOK KAZANAN ALIR", "1 VURUŞ: DUR, 2 VURUŞ: KART", "KOŞU: ÜST ZIPLAR, ALT EĞİLİR", "YANA KAYDIR: KUTULARA DÖN" } },
-  { "BUTTONS", "TUŞLAR",
-    { "BOOT: BRIGHTNESS", "HOLD BOOT 5 S: NEW WI-FI", "PWR: SCREEN ON/OFF", "WI-FI VIEW: HOLD = NEW WI-FI" },
-    { "BOOT: PARLAKLIK", "BOOT 5 SN BASILI: YENİ WI-FI", "PWR: EKRAN AÇ/KAPA", "WI-FI: BASILI TUT = YENİ AĞ" } },
+  { N_("GESTURES"),
+    { N_("SWIPE LEFT/RIGHT: NEXT PAGE"), N_("SWIPE UP/DOWN: VOLUME"), N_("TAP OR HOLD THINGS ON SCREEN"), N_("IN AN APP: SWIPE SIDEWAYS = BACK") } },
+  { N_("CLOCK"),
+    { N_("TAP THE BELL: ALARM ON/OFF"), N_("TAP ALARM HOURS: +1 HOUR"), N_("TAP ALARM MINUTES: +5 MIN"), N_("HOLD: ALARM ON/OFF") } },
+  { N_("RADIO"),
+    { N_("TAP: PLAY / STOP"), N_("GENRE KEY: PLAY, AGAIN: NEXT"), N_("HOLD THE EQUALIZER: NEW LOOK"), N_("HOLD THE DANCERS: CHANGE") } },
+  { N_("TIMERS"),
+    { N_("TAP: START / PAUSE"), N_("HOLD: RESET"), N_("TIMER KEYS: ADD MINUTES"), N_("HOURGLASS: TILT TO POUR") } },
+  { N_("SCENES"),
+    { N_("FISH TANK: TAP TO FEED"), N_("FIREPLACE: TAP, CAT WAKES"), N_("LIGHTHOUSE: TAP, BIG WAVE"), N_("LAVA LAMP: TAP, NEW COLORS") } },
+  { N_("MORE SCENES"),
+    { N_("SNOW: TAP OR SHAKE TO STIR"), N_("SNOW: HOLD FOR THE GLOBE"), N_("SHIP: TAP THE WATER"), N_("TILT: WATER AND SAND MOVE") } },
+  { N_("TOOLS"),
+    { N_("TAP A TILE: OPEN THE APP"), N_("SWIPE LEFT/RIGHT: BACK TO TILES"), N_("LEVEL: TAP SETS ZERO, HOLD CLEARS"), N_("COIN: TAP OR SHAKE TO FLIP") } },
+  { N_("MORE TOOLS"),
+    { N_("BREATHE: TAP START, HOLD BEEP"), N_("SCORE: TAP +1, HOLD -1"), N_("LAMP: TAP COLOR, UP/DOWN LIGHT"), N_("SETTINGS > PAGES: HIDE PAGES") } },
+  { N_("PLAY"),
+    { N_("KEEPER: TAP A LANE, SAVE SHIPS"), N_("TAP LIGHTS THAT LANE AT ONCE"), N_("HOLD: PAUSE. NO SWIPES IN PLAY"), N_("PAUSE/TITLE: SWIPE SIDEWAYS=BACK") } },
+  { N_("MORE PLAY"),
+    { N_("21: 10 HANDS, MOST WINS TAKES IT"), N_("KNOCK ONCE: STAND, TWICE: HIT"), N_("RUNNER: TOP JUMPS, BOTTOM DUCKS"), N_("SWIPE SIDEWAYS: BACK TO TILES") } },
+  { N_("BUTTONS"),
+    { N_("BOOT: BRIGHTNESS"), N_("HOLD BOOT 5 S: NEW WI-FI"), N_("PWR: SCREEN ON/OFF"), N_("WI-FI VIEW: HOLD = NEW WI-FI") } },
 };
 static constexpr int HELP_COUNT = sizeof(HELP_PAGES) / sizeof(HELP_PAGES[0]);
 
@@ -305,7 +294,11 @@ static void change(int dir)
     case THEME: theme::set((theme::Id)((theme::current() + dir + theme::COUNT) % theme::COUNT)); break;
     case CLOCK: apply(settings::h24() ? "h24=0\n" : "h24=1\n"); break;
     case UNITS: apply(settings::fahrenheit() ? "unit=c\n" : "unit=f\n"); break;
-    case LANG: apply(settings::tr() ? "lang=en\n" : "lang=tr\n"); break;
+    case LANG: {
+      const int n = (int)lang::Id::COUNT;
+      apply((String("lang=") + lang::data((lang::Id)(((int)settings::language() + dir + n) % n)).code + "\n").c_str());
+      break;
+    }
     case BRIGHT: {
       int b = board().brightness();
       if (b < 0) break;
@@ -354,7 +347,7 @@ static void drawList()
   int top = listTop();
   for (int r = 0; r < ROWS; r++) {
     int i = top + r, y = ROW_Y + r * ROW_H;
-    const char *name = L(ITEMS[i].en, ITEMS[i].tr);
+    const char *name = T(ITEMS[i].en);
     if (i == sel) {
       sprite(ARROW, 7, LIST_X, y, 2, HOT, true);
       text(name, LIST_X + 18, y, 2, LIT_INK);
@@ -391,7 +384,7 @@ static void drawLines(const char *title, const char *const *lines, int n, bool f
 static void drawValue()
 {
   const ItemText &it = ITEMS[sel];
-  text(L(it.what_en, it.what_tr), PX0, 14, 2, DIM_INK);
+  text(T(it.what_en), PX0, 14, 2, DIM_INK);
   sprite(ARROW, 7, PX0, VALUE_Y + 3, 3, HOT);
   sprite(ARROW, 7, PX1 - 12, VALUE_Y + 3, 3, HOT, true);
 
@@ -399,12 +392,12 @@ static void drawValue()
   bool note_hot = false;
   switch (sel) {
     case THEME: value = theme::def().name; break;
-    case CLOCK: value = settings::h24() ? L("24 HOUR", "24 SAAT") : L("12 HOUR", "12 SAAT"); break;
+    case CLOCK: value = settings::h24() ? T("24 HOUR") : T("12 HOUR"); break;
     case UNITS:
       value = settings::fahrenheit() ? "°F" : "°C";
-      note = settings::fahrenheit() ? "FAHRENHEIT" : L("CELSIUS", "SANTİGRAT");
+      note = settings::fahrenheit() ? "FAHRENHEIT" : T("CELSIUS");
       break;
-    case LANG: value = settings::tr() ? "TÜRKÇE" : "ENGLISH"; break;
+    case LANG: value = Lang().name; break;
     case BRIGHT: {
       int b = board().brightness();
       value = b < 0 ? String("-") : String(b) + "%";
@@ -412,14 +405,14 @@ static void drawValue()
     }
     case CITY:
       value = city_idx >= 0 ? CITIES[city_idx].name : settings::city().c_str();
-      if (look == Look::Running) note = L("LOOKING UP...", "ARANIYOR...");
-      else if (look == Look::Found && millis() - look_done_ms < NOTE_MS) note = L("FOUND BY YOUR IP", "IP İLE BULUNDU");
-      else if (look == Look::Failed && millis() - look_done_ms < NOTE_MS) note = L("NOT FOUND, TRY THE LIST", "BULUNAMADI, LİSTEDEN SEÇ");
-      else note = L("TAP THE NAME: FIND ME BY IP", "İSME DOKUN: IP İLE BUL");
+      if (look == Look::Running) note = T("LOOKING UP...");
+      else if (look == Look::Found && millis() - look_done_ms < NOTE_MS) note = T("FOUND BY YOUR IP");
+      else if (look == Look::Failed && millis() - look_done_ms < NOTE_MS) note = T("NOT FOUND, TRY THE LIST");
+      else note = T("TAP THE NAME: FIND ME BY IP");
       break;
     case CYCLE: {
       int m = SettingsUi_CycleMin();
-      value = m ? String(m) + L(" MIN", " DK") : String(L("OFF", "KAPALI"));
+      value = m ? String(m) + T(" MIN") : String(T("OFF"));
       break;
     }
     case PAGES: {
@@ -427,24 +420,26 @@ static void drawValue()
       value = Gadget_PageName(page_sel);
       bool shown = Gadget_PageShown(page_sel);
       note_hot = !shown;
-      note = !Gadget_PageCanHide(page_sel) ? L("ALWAYS SHOWN", "HEP GÖRÜNÜR") : shown ? L("SHOWN", "GÖRÜNÜR") : L("HIDDEN", "GİZLİ");
+      note = !Gadget_PageCanHide(page_sel) ? T("ALWAYS SHOWN") : shown ? T("SHOWN") : T("HIDDEN");
       break;
     }
     case HOLIDAYS: {
-      static const char *const EN[] = { "BY DATE", "ALWAYS", "OFF" }, *const TR[] = { "TARİHE GÖRE", "HEP AÇIK", "KAPALI" };
-      value = L(EN[xmasMode()], TR[xmasMode()]);
-      if (xmasMode() == 0) note = L("DEC 1 - JAN 6", "1 ARALIK - 6 OCAK");
+      static const char *const EN[] = { N_("BY DATE"), N_("ALWAYS"), N_("OFF") };
+      value = T(EN[xmasMode()]);
+      if (xmasMode() == 0) note = T("DEC 1 - JAN 6");
       break;
     }
     case NIGHT: {
       int a, b;
       if (!settings::nightWindow(settings::nightMode(), a, b)) {
-        value = L("OFF", "KAPALI");
+        value = T("OFF");
       } else {
         char w[16];
         snprintf(w, sizeof(w), "%02d:%02d-%02d:%02d", a / 60, a % 60, b / 60, b % 60);
         value = w;
-        note = String(L("SCREEN TO ", "EKRAN %")) + settings::NIGHT_DIM_PCT + L("%", "");
+        char n[32];
+        snprintf(n, sizeof(n), T("SCREEN TO %d%%"), settings::NIGHT_DIM_PCT);
+        note = n;
       }
       break;
     }
@@ -489,35 +484,36 @@ void SettingsUi_Draw()
     const HelpPage &h = HELP_PAGES[help_page];
     char corner[8];
     snprintf(corner, sizeof(corner), "%d/%d", help_page + 1, HELP_COUNT);
-    drawLines(L(h.title_en, h.title_tr), settings::tr() ? h.tr : h.en, 4, false, corner);
+    const char *lines[4] = { T(h.en[0]), T(h.en[1]), T(h.en[2]), T(h.en[3]) };
+    drawLines(T(h.title), lines, 4, false, corner);
   } else if (sel == WIFI) {
     String l[4];
     bool up = WiFi.status() == WL_CONNECTED;
-    l[0] = up ? WiFi.SSID() : String(L("NOT CONNECTED", "BAĞLI DEĞİL"));
+    l[0] = up ? WiFi.SSID() : String(T("NOT CONNECTED"));
     if (up && l[0].length() > 17) l[0] = l[0].substring(0, 17);  // the QR code takes the right side
     l[1] = up ? WiFi.localIP().toString() : String();
-    l[2] = up ? String(L("SIGNAL ", "SİNYAL ")) + WiFi.RSSI() + " DBM" : String();
-    l[3] = L("HOLD: NEW WI-FI", "TUT: YENİ WI-FI");
+    l[2] = up ? String(T("SIGNAL ")) + WiFi.RSSI() + " DBM" : String();
+    l[3] = T("HOLD: NEW WI-FI");
     const char *p[4] = { l[0].c_str(), l[1].c_str(), l[2].c_str(), l[3].c_str() };
-    drawLines(up ? L("SCAN FOR SETTINGS", "AYARLAR İÇİN OKUT") : L("NETWORK", "AĞ"), p, 4, true);
+    drawLines(up ? T("SCAN FOR SETTINGS") : T("NETWORK"), p, 4, true);
     if (up) drawQr("http://" + l[1] + "/settings");  // the IP: Android often cannot resolve .local
   } else if (sel == ABOUT) {
     String host = state.name + ".local/settings";
-    String news = String(L("NEW: ", "YENİ: ")) + UpdateCheck_Newer();
-    const char *p[4] = { "PHOSPHOR " FW_VERSION, L("MORE ON YOUR PHONE:", "TELEFONDAN DAHA FAZLASI:"), host.c_str(),
+    String news = String(T("NEW: ")) + UpdateCheck_Newer();
+    const char *p[4] = { "PHOSPHOR " FW_VERSION, T("MORE ON YOUR PHONE:"), host.c_str(),
                          "github.com/melihkoray/phosphor" };
     if (*UpdateCheck_Newer()) {  // a newer release is out: say so, with where to get it (the device never installs it)
       p[1] = news.c_str();
       p[2] = UpdateCheck_Site();
       p[3] = host.c_str();
     }
-    drawLines(L("ABOUT", "HAKKINDA"), p, 4, true);
+    drawLines(T("ABOUT"), p, 4, true);
   } else {
     drawValue();
   }
   noClip();
   if (sel == WIFI && wifiConfirming()) {
-    ClockFaces_Banner(L("HOLD AGAIN: FORGET WI-FI + SETUP", "TEKRAR BASILI TUT: WI-FI UNUT + KURULUM"));
+    ClockFaces_Banner(T("HOLD AGAIN: FORGET WI-FI + SETUP"));
   }
 }
 
@@ -540,7 +536,7 @@ void SettingsUi_Hold()
   }
   wifi_confirm_until = 0;
   board().setDisplayOn(true);
-  board().showNotice(L("Resetting Wi-Fi", "Wi-Fi sıfırlanıyor"), L("The setup network will open", "Kurulum ağı açılacak"));
+  board().showNotice(T("Resetting Wi-Fi"), T("The setup network will open"));
   delay(1500);
   Net_ResetWifi();
 }

@@ -32,6 +32,10 @@ WIFIMANAGER_VERSION="2.0.17"
 
 VERSION="${PHOSPHOR_VERSION:-$(git describe --tags --always 2>/dev/null || echo dev)}"
 
+# The screen texts against the language tables (Lang*.cpp): a text without a translation, a broken table or a mistyped
+# T()/TCTX() stops the build here, with the file and line.
+python3 tools/check_i18n.py
+
 command -v arduino-cli >/dev/null || { echo "arduino-cli not found: https://arduino.github.io/arduino-cli/"; exit 1; }
 
 arduino-cli lib install "U8g2@${U8G2_VERSION}" "WiFiManager@${WIFIMANAGER_VERSION}" "SensorLib@${SENSORLIB_VERSION}"

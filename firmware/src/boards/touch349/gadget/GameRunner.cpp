@@ -196,10 +196,10 @@ Scene scene_now;
 const char *zoneName(int z)
 {
   switch (z) {
-    case 1: return L("DESERT", "ÇÖL");
-    case 2: return L("CITY", "ŞEHİR");
-    case 3: return L("SNOW", "KAR");
-    default: return L("MEADOW", "ÇAYIR");
+    case 1: return T("DESERT");
+    case 2: return T("CITY");
+    case 3: return T("SNOW");
+    default: return T("MEADOW");
   }
 }
 
@@ -596,7 +596,7 @@ void drawHud()
   // top left: nothing that comes at the runner ever flies there
   snprintf(b, sizeof(b), "%05lu", (unsigned long)sim.score());
   text(b, 20, 14, 4, score_ink);
-  snprintf(b, sizeof(b), "%s %05lu", L("HI", "REKOR"), (unsigned long)score_hi);
+  snprintf(b, sizeof(b), "%s %05lu", T("HI"), (unsigned long)score_hi);
   text(b, 20, 46, 2, dim);
   if (rs == Rs::Run && (int32_t)(zone_until - millis()) > 0) {
     snprintf(b, sizeof(b), "%s", zoneName(Sim::zoneOf(sim.score())));
@@ -641,16 +641,16 @@ void runnerDraw(const DateTime &)
   }
   if (rs == Rs::Ready) {
     panel(28, 138);
-    centered(L("TAP TO RUN", "DOKUN: KOŞ"), 5, 40, lit);
-    centered(L("TOP: JUMP  HOLD: HIGHER", "ÜST: ZIPLA  BASILI: YÜKSEK"), 2, 86, hot);
-    centered(L("BOTTOM: DUCK  HOLD: LOW", "ALT: EĞİL  BASILI: ALÇAK"), 2, 108, hot);
+    centered(T("TAP TO RUN"), 5, 40, lit);
+    centered(T("TOP: JUMP  HOLD: HIGHER"), 2, 86, hot);
+    centered(T("BOTTOM: DUCK  HOLD: LOW"), 2, 108, hot);
   } else if (rs == Rs::Dead) {
     panel(24, 136);
-    centered(L("GAME OVER", "OYUN BİTTİ"), 5, 36, hot);
+    centered(T("GAME OVER"), 5, 36, hot);
     char b[32];
-    snprintf(b, sizeof(b), "%s %lu", new_hi ? L("NEW BEST", "YENİ REKOR") : L("SCORE", "SKOR"), (unsigned long)sim.score());
+    snprintf(b, sizeof(b), "%s %lu", new_hi ? T("NEW BEST") : T("SCORE"), (unsigned long)sim.score());
     centered(b, 3, 82, lit);
-    if (millis() - dead_ms > 600) centered(L("TAP TO RETRY", "DOKUN: TEKRAR"), 2, 112, hot);
+    if (millis() - dead_ms > 600) centered(T("TAP TO RETRY"), 2, 112, hot);
   }
   if (theme::current() == theme::C64) {
     const theme::Def &d = theme::def();
@@ -751,6 +751,6 @@ void iconRunner(int x, int yy, uint16_t c)
 
 }  // namespace
 
-const App APP_RUNNER = { "runner", "RUNNER", "KOŞU", iconRunner, true, true, runnerEnter, nullptr, runnerDraw, runnerGesture, runnerTick, runnerFrameMs, runnerTouchDown, runnerSwipesLocked, runnerTouch };
+const App APP_RUNNER = { "runner", N_("RUNNER"), iconRunner, true, true, runnerEnter, nullptr, runnerDraw, runnerGesture, runnerTick, runnerFrameMs, runnerTouchDown, runnerSwipesLocked, runnerTouch };
 
 #endif

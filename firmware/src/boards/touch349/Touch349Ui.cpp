@@ -17,12 +17,6 @@ static constexpr int MARGIN = 20;
 // Set by each public entry point; the drawing helpers below share it.
 static U8G2 *u8g2 = nullptr;
 
-static const char *WEEKDAYS_EN[] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-static const char *MONTHS_EN[] = { "January", "February", "March", "April", "May", "June",
-                                   "July", "August", "September", "October", "November", "December" };
-static const char *WEEKDAYS_TR[] = { "Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi" };
-static const char *MONTHS_TR[] = { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-                                "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
 
 // Largest first; the message page picks the biggest one that fits.
 static const uint8_t *MESSAGE_FONTS[] = { u8g2_font_helvB24_te, u8g2_font_helvB18_te, u8g2_font_helvB14_te,
@@ -117,9 +111,9 @@ static void drawClockPage(const DateTime &now)
   drawStatus(12);
 
   u8g2->setFont(u8g2_font_helvB24_te);
-  u8g2->drawUTF8(right_x, 86, (settings::tr() ? WEEKDAYS_TR : WEEKDAYS_EN)[weekday(now.year, now.month, now.day)]);
+  u8g2->drawUTF8(right_x, 86, Lang().weekday_long[weekday(now.year, now.month, now.day)]);
   u8g2->setFont(u8g2_font_helvB18_te);
-  snprintf(text, sizeof(text), "%d %s %d", now.day, (settings::tr() ? MONTHS_TR : MONTHS_EN)[now.month - 1], now.year);
+  snprintf(text, sizeof(text), "%d %s %d", now.day, Lang().month_long[now.month - 1], now.year);
   u8g2->drawUTF8(right_x, 116, text);
 
   int bar_w = W - 2 * MARGIN;
@@ -145,31 +139,31 @@ static void drawInfoPage(const DateTime &now)
   };
 
   snprintf(text, sizeof(text), "%s.local", state.name.c_str());
-  row(L("Name", "Ad"), text);
+  row(T("Name"), text);
   if (Net_Connected()) {
     snprintf(text, sizeof(text), "%s  (%d dBm)", Net_Ip().c_str(), Net_Rssi());
   } else {
-    snprintf(text, sizeof(text), "%s", L("not connected", "bağlı değil"));
+    snprintf(text, sizeof(text), "%s", T("not connected"));
   }
   row("Wi-Fi", text);
-  row(L("Firmware", "Yazılım"), FW_VERSION);
+  row(T("Firmware"), FW_VERSION);
   snprintf(text, sizeof(text), "ESP32-S3 rev %d, %lu MHz", ESP.getChipRevision(), (unsigned long)ESP.getCpuFreqMHz());
-  row(L("Chip", "Çip"), text);
+  row(T("Chip"), text);
   snprintf(text, sizeof(text), "%04d-%02d-%02d %02d:%02d:%02d", now.year, now.month, now.day, now.hour, now.minute, now.second);
-  row(L("Time", "Saat"), text);
+  row(T("Time"), text);
 
   y = 62;
   x = W / 2 + 10;
-  snprintf(text, sizeof(text), settings::tr() ? "%u / %u KB boş" : "%u / %u KB free", (unsigned)(ESP.getFreePsram() / 1024), (unsigned)(ESP.getPsramSize() / 1024));
+  snprintf(text, sizeof(text), T("%u / %u KB free"), (unsigned)(ESP.getFreePsram() / 1024), (unsigned)(ESP.getPsramSize() / 1024));
   row("PSRAM", text);
-  snprintf(text, sizeof(text), settings::tr() ? "%u KB boş" : "%u KB free", (unsigned)(ESP.getFreeHeap() / 1024));
+  snprintf(text, sizeof(text), T("%u KB free"), (unsigned)(ESP.getFreeHeap() / 1024));
   row("Heap", text);
   snprintf(text, sizeof(text), "%.2f V (%%%d)", state.batt_v, state.batt_pct);
-  row(L("Battery", "Pil"), text);
-  snprintf(text, sizeof(text), settings::tr() ? "%lu dk" : "%lu min", (unsigned long)(millis() / 60000));
-  row(L("Uptime", "Açık süre"), text);
+  row(T("Battery"), text);
+  snprintf(text, sizeof(text), T("%lu min"), (unsigned long)(millis() / 60000));
+  row(T("Uptime"), text);
 
-  u8g2->drawUTF8(MARGIN, 160, L("Tap: next page · PWR: screen on/off · BOOT: brightness, hold 5 s: reset Wi-Fi", "Dokun: sonraki sayfa · PWR: ekran aç/kapa · BOOT: parlaklık, 5 sn: Wi-Fi sıfırla"));
+  u8g2->drawUTF8(MARGIN, 160, T("Tap: next page · PWR: screen on/off · BOOT: brightness, hold 5 s: reset Wi-Fi"));
 }
 
 // Word-wraps text for the current font. Returns the line count, or -1 if it needs more than max_lines.
@@ -253,7 +247,7 @@ static void drawMessagePage()
   }
 
   u8g2->setFont(u8g2_font_6x13_te);
-  drawCentered(166, L("Tap: back to the clock", "Dokun: saate dön"));
+  drawCentered(166, T("Tap: back to the clock"));
 }
 
 void Touch349Board::render(const DateTime &now)
@@ -317,7 +311,7 @@ void Touch349Board::drawLevelOverlay(const uint16_t *under)
 
   u8g2->clearBuffer();
   u8g2->setFont(u8g2_font_helvB10_te);
-  u8g2->drawUTF8(left, top - 14, "PARLAKLIK");
+  u8g2->drawUTF8(left, top - 14, T("BRIGHTNESS"));
   page_.paint(scratch_, DIM);
 
   char value[8];
@@ -351,25 +345,25 @@ void Touch349Board::showSetup(const char *ap_name)
   u8g2->clearBuffer();
   u8g2->setDrawColor(1);
   u8g2->setFont(u8g2_font_helvB18_te);
-  u8g2->drawUTF8(MARGIN, 30, L("Wi-Fi setup", "Wi-Fi kurulumu"));
+  u8g2->drawUTF8(MARGIN, 30, T("Wi-Fi setup"));
   u8g2->drawHLine(MARGIN, 40, W - 2 * MARGIN);
 
   u8g2->setFont(u8g2_font_helvR10_te);
   int y = 64;
-  u8g2->drawUTF8(MARGIN, y, L("1. Join this network with your phone, or scan the QR code:", "1. Telefonla bu ağa bağlan, ya da QR kodu okut:"));
+  u8g2->drawUTF8(MARGIN, y, T("1. Join this network with your phone, or scan the QR code:"));
   y += 20;
   u8g2->setFont(u8g2_font_helvB12_te);
   u8g2->drawUTF8(MARGIN + 14, y, ap_name);
   y += 22;
   u8g2->setFont(u8g2_font_helvR10_te);
-  u8g2->drawUTF8(MARGIN, y, L("2. On the page that opens: Configure WiFi, pick your network, enter its password", "2. Açılan sayfada Configure WiFi, ağını seç, şifreni gir"));
+  u8g2->drawUTF8(MARGIN, y, T("2. On the page that opens: Configure WiFi, pick your network, enter its password"));
   y += 20;
-  u8g2->drawUTF8(MARGIN, y, L("3. Device name, e.g. desk (then open desk.local/settings)", "3. Cihaz adı, ör. masa (sonra masa.local/settings)"));
+  u8g2->drawUTF8(MARGIN, y, T("3. Device name, e.g. desk (then open desk.local/settings)"));
   y += 20;
-  u8g2->drawUTF8(MARGIN, y, "4. Save");
+  u8g2->drawUTF8(MARGIN, y, T("4. Save"));
 
   u8g2->setFont(u8g2_font_6x13_te);
-  u8g2->drawUTF8(MARGIN, 162, L("If no page opens, go to 192.168.4.1 in a browser", "Sayfa açılmazsa tarayıcıda: 192.168.4.1"));
+  u8g2->drawUTF8(MARGIN, 162, T("If no page opens, go to 192.168.4.1 in a browser"));
 
   qr_box = 116;
   qr_x = W - qr_box - MARGIN;

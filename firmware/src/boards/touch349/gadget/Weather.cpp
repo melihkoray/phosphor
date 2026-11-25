@@ -38,15 +38,15 @@ static Sky skyFromCode(int code)
 const char *Weather_SkyName(Sky s)
 {
   switch (s) {
-    case Sky::Clear: return L("CLEAR", "AÇIK");
-    case Sky::PartCloud: return L("PARTLY CLOUDY", "PARÇALI");
-    case Sky::Cloud: return L("CLOUDY", "BULUTLU");
-    case Sky::Fog: return L("FOG", "SİSLİ");
-    case Sky::Drizzle: return L("DRIZZLE", "ÇİSELEME");
-    case Sky::Rain: return L("RAIN", "YAĞMUR");
-    case Sky::Shower: return L("SHOWERS", "SAĞANAK");
-    case Sky::Snow: return L("SNOW", "KAR");
-    case Sky::Storm: return L("STORM", "FIRTINA");
+    case Sky::Clear: return T("CLEAR");
+    case Sky::PartCloud: return T("PARTLY CLOUDY");
+    case Sky::Cloud: return T("CLOUDY");
+    case Sky::Fog: return T("FOG");
+    case Sky::Drizzle: return T("DRIZZLE");
+    case Sky::Rain: return T("RAIN");
+    case Sky::Shower: return T("SHOWERS");
+    case Sky::Snow: return T("SNOW");
+    case Sky::Storm: return T("STORM");
     default: return "---";
   }
 }

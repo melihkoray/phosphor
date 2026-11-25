@@ -37,7 +37,7 @@ extern Ink DIM_INK;
 extern Ink GHOST_INK;
 
 // A bitmap font: glyph cells of w x h font pixels, advancing adv per glyph. rows(cp) returns h bytes, bit (w-1-col)
-// lit = column col, or nullptr when the font has no such glyph. Turkish accents are dots drawn above/below the base
+// lit = column col, or nullptr when the font has no such glyph. Turkish and Polish accents are dots drawn above/below the base
 // letter from 5-wide masks, shifted right by accent_dx columns.
 struct Font {
   uint8_t w, h, adv;
@@ -66,7 +66,7 @@ void rect(int x, int y, int w, int h, uint16_t color);
 void frame(int x, int y, int w, int h, uint16_t color);  // 1 px outline
 
 // Text in the current font: every font cell is a d x d dot at pitch p (5x7 VFD font: glyphs advance 6 p). UTF-8 in;
-// lower case is shown as upper case, Turkish letters keep their accents, other accented letters lose them. Returns the
+// lower case is shown as upper case, Turkish and Polish letters keep their accents, other accented letters lose them. Returns the
 // end x.
 int text(const char *s, int x, int y, int p, int d, const Ink &ink);
 inline int text(const char *s, int x, int y, int p, const Ink &ink) { return text(s, x, y, p, p, ink); }

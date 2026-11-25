@@ -89,7 +89,7 @@ struct Resolved {
   uint8_t bot;  // accent dots one row below
 };
 
-// Maps a code point onto a glyph of the font: upper case, Turkish accents kept, other accents dropped.
+// Maps a code point onto a glyph of the font: upper case, Turkish and Polish accents kept, other accents dropped.
 static Resolved resolve(uint32_t cp)
 {
   if (cp >= 'a' && cp <= 'z') {
@@ -103,6 +103,15 @@ static Resolved resolve(uint32_t cp)
     case 0x131: return { 'I', 0, 0 };                 // ı
     case 0x15E: case 0x15F: return { 'S', 0, 0x04 };  // Ş ş
     case 0xC7: case 0xE7: return { 'C', 0, 0x04 };    // Ç ç
+    case 0x104: case 0x105: return { 'A', 0, 0x01 };  // Ą ą: the ogonek is a dot below on the right
+    case 0x118: case 0x119: return { 'E', 0, 0x01 };  // Ę ę
+    case 0x106: case 0x107: return { 'C', 0x02, 0 };  // Ć ć: the acute is a dot above on the right
+    case 0x143: case 0x144: return { 'N', 0x02, 0 };  // Ń ń
+    case 0xD3: case 0xF3: return { 'O', 0x02, 0 };    // Ó ó
+    case 0x15A: case 0x15B: return { 'S', 0x02, 0 };  // Ś ś
+    case 0x179: case 0x17A: return { 'Z', 0x02, 0 };  // Ź ź
+    case 0x17B: case 0x17C: return { 'Z', 0x04, 0 };  // Ż ż: the dot above, in the middle
+    case 0x141: case 0x142: return { 'L', 0x10, 0 };  // Ł ł: a dot above on the left stands for the stroke
     case 0x2018: case 0x2019: case 0x60: case 0xB4: return { '\'', 0, 0 };
     case 0x201C: case 0x201D: return { '"', 0, 0 };
     case 0x2013: case 0x2014: return { '-', 0, 0 };

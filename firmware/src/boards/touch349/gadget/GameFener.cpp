@@ -509,9 +509,9 @@ static void drawTitle()
   for (int g = 0; g < 2; g++) {
     card(cx[g] - 96, 52, 192, 66);
     centered(g ? "GAME B" : "GAME A", cx[g], 60, 3, ink);
-    centered(g ? L("BUSY SEAS", "HIZLI DENİZ") : L("CALM SEAS", "SAKİN DENİZ"), cx[g], 94, 2, ink);
+    centered(g ? T("BUSY SEAS") : T("CALM SEAS"), cx[g], 94, 2, ink);
   }
-  const char *c = tick_snd ? L("CLICK ON", "TIK AÇIK") : L("CLICK OFF", "TIK KAPALI");
+  const char *c = tick_snd ? T("CLICK ON") : T("CLICK OFF");
   int w = textWidth(c, 2) + 12;
   card(W - 8 - w, 3, w, 22);
   text(c, W - 8 - w + 6, 7, 2, ink);
@@ -521,9 +521,9 @@ static void drawPause()
 {
   const Ink ink = { fener_art::INK };
   card(150, 46, 340, 82);
-  centered(L("PAUSE", "DURAKLADI"), W / 2, 54, 4, ink);
-  centered(L("TAP: CONTINUE", "DOKUN: DEVAM"), W / 2, 90, 2, ink);
-  centered(L("SWIPE SIDEWAYS: MENU", "YANA KAYDIR: MENÜ"), W / 2, 108, 2, ink);
+  centered(T("PAUSE"), W / 2, 54, 4, ink);
+  centered(T("TAP: CONTINUE"), W / 2, 90, 2, ink);
+  centered(T("SWIPE SIDEWAYS: MENU"), W / 2, 108, 2, ink);
 }
 
 static void fenerDraw(const DateTime &)
@@ -544,7 +544,7 @@ static uint32_t fenerFrameMs() { return 40; }
 
 static void iconFener(int x, int y, uint16_t c) { sprite(ICON, rowsOf(ICON), x, y, 4, c); }
 
-const App APP_FENER = { "fener", "KEEPER", "FENER", iconFener, true, true, fenerEnter, fenerExit, fenerDraw, fenerGesture, fenerTick,
+const App APP_FENER = { "fener", N_("KEEPER"), iconFener, true, true, fenerEnter, fenerExit, fenerDraw, fenerGesture, fenerTick,
                         fenerFrameMs, fenerTouchDown, fenerSwipesLocked };
 
 #endif

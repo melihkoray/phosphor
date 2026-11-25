@@ -394,12 +394,12 @@ int progressFill(int width)
   return (int)((uint64_t)(total - min(left_ms, total)) * width / total);
 }
 bool roundDone(int i) { return i < done_count % 4 || (done_count > 0 && done_count % 4 == 0 && on_break); }
-const char *phaseLabel() { return on_break ? (done_count % 4 == 0 ? L("LONG BREAK", "UZUN MOLA") : L("BREAK", "MOLA")) : L("FOCUS", "ODAK"); }
+const char *phaseLabel() { return on_break ? (done_count % 4 == 0 ? T("LONG BREAK") : T("BREAK")) : T("FOCUS"); }
 
 void hints(int x)
 {
-  vfd::text(L("TAP: START / PAUSE", "DOKUN: BAŞLAT / DURAKLAT"), x, 148, 1, vfd::Ink{ vfd::DIM });
-  vfd::text(L("HOLD: RESET", "BASILI TUT: SIFIRLA"), x, 158, 1, vfd::Ink{ vfd::DIM });
+  vfd::text(T("TAP: START / PAUSE"), x, 148, 1, vfd::Ink{ vfd::DIM });
+  vfd::text(T("HOLD: RESET"), x, 158, 1, vfd::Ink{ vfd::DIM });
 }
 
 void cornerText(const char *s, int right, int y, uint16_t color)
@@ -426,7 +426,7 @@ void panelC64(const char *corner)
   const int pw = 184, fill = progressFill(pw) / 4 * 4;
   vfd::rect(448, 104, pw, 6, grey);
   vfd::rect(448, 104, fill, 6, green);
-  int tx = vfd::text(L("ROUND", "TUR"), 448, 122, 2, vfd::Ink{ pc });
+  int tx = vfd::text(T("ROUND"), 448, 122, 2, vfd::Ink{ pc });
   for (int i = 0; i < 4; i++) vfd::rect(tx + 12 + i * 24, 122, 16, 14, roundDone(i) ? green : grey);
   hints(448);
 }
@@ -462,7 +462,7 @@ void panelAmiga(const char *corner)
     int g = 136 + 85 * x / in;
     vfd::rect(bx + 2 + x, by + 2, 2, bh - 4, C(255, (g & 0xF0) | (g >> 4), 0));
   }
-  int tx = vfd::text(L("ROUND", "TUR"), 446, 122, 2, vfd::Ink{ light });
+  int tx = vfd::text(T("ROUND"), 446, 122, 2, vfd::Ink{ light });
   for (int i = 0; i < 4; i++) {
     int x = tx + 12 + i * 24, y = 121;
     bool on = roundDone(i);
@@ -493,7 +493,7 @@ void panelAtari(const char *corner)
   const int pw = 176, fill = progressFill(pw) / 8 * 8;
   vfd::rect(448, 104, pw, 8, grey);
   vfd::rect(448, 104, fill, 8, warm);
-  int tx = vfd::text(L("ROUND", "TUR"), 448, 122, 2, vfd::Ink{ pc });
+  int tx = vfd::text(T("ROUND"), 448, 122, 2, vfd::Ink{ pc });
   for (int i = 0; i < 4; i++) vfd::rect(tx + 8 + i * 24, 122, 16, 12, roundDone(i) ? warm : grey);
   hints(448);
 }
@@ -548,7 +548,7 @@ void Study_Draw(const char *corner_text)
   seg(digits, px0 + 2, 36, 32, 56, 7, 7, big);
   rect(px0, 104, pw, 6, GHOST);
   rect(px0, 104, progressFill(pw), 6, phase_c);
-  int tx = text(L("ROUND", "TUR"), px0, 122, 2, Ink{ machine ? phase_c : DIM });
+  int tx = text(T("ROUND"), px0, 122, 2, Ink{ machine ? phase_c : DIM });
   for (int i = 0; i < 4; i++) rect(tx + 10 + i * 22, 122, 16, 14, roundDone(i) ? HOT : GHOST);
   hints(px0);
 }

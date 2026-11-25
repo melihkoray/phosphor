@@ -15,7 +15,7 @@ static const char *PATH = "/settings.txt";
 struct Values {
   String city = "Istanbul";
   float lat = 41.01f, lon = 28.98f;
-  bool tr = false;
+  lang::Id language = lang::Id::EN;
   bool h24 = true;
   bool fahr = false;
   int focus = 25, short_b = 5, long_b = 15;
@@ -60,7 +60,7 @@ static String serialize(const Values &v)
   out += "city=" + v.city + "\n";
   out += "lat=" + String(v.lat, 4) + "\n";
   out += "lon=" + String(v.lon, 4) + "\n";
-  out += String("lang=") + (v.tr ? "tr" : "en") + "\n";
+  out += String("lang=") + lang::data(v.language).code + "\n";
   out += String("h24=") + (v.h24 ? "1" : "0") + "\n";
   out += String("unit=") + (v.fahr ? "f" : "c") + "\n";
   out += "night=" + String(v.night) + "\n";
@@ -92,7 +92,7 @@ static bool parse(const String &body, Values &v, String &err)
     if (k == "city") v.city = clean(val, 48);
     else if (k == "lat") v.lat = val.toFloat();
     else if (k == "lon") v.lon = val.toFloat();
-    else if (k == "lang") v.tr = val.startsWith("tr");
+    else if (k == "lang" && !lang::fromCode(val.c_str(), v.language)) v.language = lang::Id::EN;  // unknown: English, as before
     else if (k == "h24") v.h24 = val.toInt() != 0;
     else if (k == "unit") v.fahr = val.startsWith("f");
     else if (k == "night") v.night = constrain(val.toInt(), 0, NIGHT_MODES - 1);
@@ -236,7 +236,7 @@ bool apply(const String &body, String &err)
 }
 
 uint32_t version() { return ver; }
-bool tr() { return cur.tr; }
+lang::Id language() { return cur.language; }
 bool h24() { return cur.h24; }
 bool fahrenheit() { return cur.fahr; }
 int nightMode() { return cur.night; }
@@ -289,5 +289,9 @@ void tick()
 }
 
 }  // namespace settings
+
+// The language on screen for T() (Lang.h): the settings own it, so there is one copy of it and it is right from the first
+// call on (the defaults until begin() has read the file).
+lang::Id lang::current() { return settings::language(); }
 
 #endif

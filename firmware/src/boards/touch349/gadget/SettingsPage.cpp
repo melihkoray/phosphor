@@ -87,7 +87,7 @@ button.warn:hover { border-color: var(--hot); color: var(--hot); }
     <h2 id="t-disp">Display</h2>
     <div class="row" style="flex-wrap:wrap;gap:18px">
       <div class="shrink"><label id="t-lang">Language</label>
-        <div class="seg" id="lang"><button data-v="en">English</button><button data-v="tr">Türkçe</button></div></div>
+        <div class="seg" id="lang"><button data-v="en">English</button><button data-v="tr">Türkçe</button><button data-v="pl">Polski</button></div></div>
       <div class="shrink"><label id="t-clock">Clock</label>
         <div class="seg" id="h24"><button data-v="1">24 h</button><button data-v="0">12 h</button></div></div>
       <div class="shrink"><label id="t-unit">Temperature</label>
@@ -158,6 +158,13 @@ const TR = {
   't-radio-hint': 'Her grup radyo ekranında bir buton (en çok 7). Aynı butona tekrar dokununca gruptaki sonraki istasyona geçer.',
   't-st-name': 'Ad (16 harf)', 't-into': 'Eklenecek grup', 't-codec': 'Cihaz sadece MP3 ve AAC yayınları çalar. ? işaretli istasyonlar biçimini bildirmiyor: önce deneyin.'
 };
+const PL = {
+  't-title': 'Ustawienia', 't-sub': 'Zmiany działają na urządzeniu od razu po naciśnięciu Zapisz.', 't-loc': 'Lokalizacja', 't-now': 'Pogoda i czas dla:',
+  't-disp': 'Ekran', 't-lang': 'Język', 't-clock': 'Zegar', 't-unit': 'Temperatura', 't-night': 'Ściemnianie w nocy (ekran 15%)', 't-pages': 'Strony', 't-pages-hint': 'Strony, które przewijasz na urządzeniu. Odznacz te, których nie chcesz; zegar i ta strona ustawień zostają zawsze.', 't-pomo': 'Licznik skupienia (minuty)', 't-focus': 'Skupienie',
+  't-short': 'Krótka przerwa', 't-long': 'Długa przerwa', 't-radio': 'Radio',
+  't-radio-hint': 'Każda grupa to jeden przycisk na ekranie radia (maksymalnie 7). Ponowne dotknięcie przycisku przechodzi do następnej stacji w grupie.',
+  't-st-name': 'Nazwa (16 liter)', 't-into': 'Dodaj do grupy', 't-codec': 'Urządzenie odtwarza tylko strumienie MP3 i AAC. Stacje oznaczone ? nie podały formatu: najpierw je wypróbuj.'
+};
 const EN = {};
 document.querySelectorAll('[id^="t-"]').forEach(e => EN[e.id] = e.textContent);
 const W = {
@@ -166,7 +173,10 @@ const W = {
         exp: 'Export list', imp: 'Import list', modeS: 'Search', modeU: 'Stream URL', loading: 'Searching…', unsaved: 'Not saved yet', try: 'test first' },
   tr: { search: 'Ara', city: 'Şehir ara', st: 'İstasyon adı, tür ya da ülke', save: 'Kaydet', saved: 'Kaydedildi. Cihaz güncellendi.',
         add: 'Ekle', test: '▶ Dene', group: '+ Grup', del: 'Sil', none: 'Henüz istasyon yok', found0: 'Bulunamadı', testing: 'Cihazda çalıyor…',
-        exp: 'Listeyi dışa aktar', imp: 'Listeyi içe aktar', modeS: 'Ara', modeU: 'Yayın adresi', loading: 'Aranıyor…', unsaved: 'Henüz kaydedilmedi', try: 'önce dene' }
+        exp: 'Listeyi dışa aktar', imp: 'Listeyi içe aktar', modeS: 'Ara', modeU: 'Yayın adresi', loading: 'Aranıyor…', unsaved: 'Henüz kaydedilmedi', try: 'önce dene' },
+  pl: { search: 'Szukaj', city: 'Szukaj miasta', st: 'Nazwa stacji, gatunek lub kraj', save: 'Zapisz', saved: 'Zapisano. Urządzenie zaktualizowane.',
+        add: 'Dodaj', test: '▶ Próba', group: '+ Grupa', del: 'Usuń', none: 'Brak stacji', found0: 'Nic nie znaleziono', testing: 'Gra na urządzeniu…',
+        exp: 'Eksportuj listę', imp: 'Importuj listę', modeS: 'Szukaj', modeU: 'Adres strumienia', loading: 'Szukanie…', unsaved: 'Jeszcze niezapisane', try: 'najpierw wypróbuj' }
 };
 const w = k => W[S.lang][k];
 
@@ -198,7 +208,7 @@ function seg(id, val, onPick) {
   });
 }
 function texts() {
-  const T = S.lang === 'tr' ? TR : EN;
+  const T = S.lang === 'tr' ? TR : S.lang === 'pl' ? PL : EN;
   for (const id in T) { const e = document.getElementById(id); if (e) e.textContent = T[id]; }
   document.documentElement.lang = S.lang;
   $('#city-go').textContent = $('#st-go').textContent = w('search');
@@ -243,14 +253,14 @@ function render() {
   $('#add-group').disabled = S.groups.length >= 7;
   fillGroupSelect();
 }
-const PAGES = [['clock', 'Clock', 'Saat', 1], ['radio', 'Radio', 'Radyo'], ['weather', 'Weather', 'Hava durumu'], ['timer', 'Timer', 'Sayaç'],
-  ['study', 'Focus', 'Odak'], ['hourglass', 'Hourglass', 'Kum saati'], ['aquarium', 'Fish tank', 'Akvaryum'], ['snow', 'Snow', 'Kar'],
-  ['fire', 'Fireplace', 'Şömine'], ['sea', 'Lighthouse', 'Fener'], ['wave', 'Ship', 'Gemi'], ['lava', 'Lava lamp', 'Lav lambası'],
-  ['tools', 'Tools', 'Araçlar'], ['play', 'Play', 'Oyun'], ['settings', 'Settings', 'Ayarlar', 1]];
+const PAGES = [['clock', 'Clock', 'Saat', 'Zegar', 1], ['radio', 'Radio', 'Radyo', 'Radio'], ['weather', 'Weather', 'Hava durumu', 'Pogoda'], ['timer', 'Timer', 'Sayaç', 'Minutnik'],
+  ['study', 'Focus', 'Odak', 'Skupienie'], ['hourglass', 'Hourglass', 'Kum saati', 'Klepsydra'], ['aquarium', 'Fish tank', 'Akvaryum', 'Akwarium'], ['snow', 'Snow', 'Kar', 'Śnieg'],
+  ['fire', 'Fireplace', 'Şömine', 'Kominek'], ['sea', 'Lighthouse', 'Fener', 'Latarnia'], ['wave', 'Ship', 'Gemi', 'Statek'], ['lava', 'Lava lamp', 'Lav lambası', 'Lampa lawowa'],
+  ['tools', 'Tools', 'Araçlar', 'Narzędzia'], ['play', 'Play', 'Oyun', 'Gry'], ['settings', 'Settings', 'Ayarlar', 'Ustawienia', 1]];
 function renderPages() {
   const hidden = new Set((S.hide || '').split(',').filter(Boolean)), box = $('#pages');
   box.innerHTML = '';
-  PAGES.forEach(([key, en, tr, locked]) => {
+  PAGES.forEach(([key, en, tr, pl, locked]) => {
     const l = document.createElement('label'), c = document.createElement('input');
     c.type = 'checkbox'; c.checked = locked || !hidden.has(key); c.disabled = !!locked;
     l.className = c.checked ? '' : 'off';
@@ -259,7 +269,7 @@ function renderPages() {
       S.hide = PAGES.filter(p => hidden.has(p[0])).map(p => p[0]).join(',');
       l.className = c.checked ? '' : 'off'; dirty();
     };
-    l.append(c, S.lang === 'tr' ? tr : en);
+    l.append(c, S.lang === 'tr' ? tr : S.lang === 'pl' ? pl : en);
     box.appendChild(l);
   });
 }

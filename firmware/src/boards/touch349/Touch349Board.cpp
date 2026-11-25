@@ -672,7 +672,7 @@ void Touch349Board::checkButtons(uint32_t now_ms)
     if (!boot_held_ && now_ms - boot_down_ms_ >= WIFI_RESET_HOLD_MS) {
       boot_held_ = true;
       setDisplayOn(true);
-      showNotice(L("Resetting Wi-Fi", "Wi-Fi sıfırlanıyor"), L("The setup network will open", "Kurulum ağı açılacak"));
+      showNotice(T("Resetting Wi-Fi"), T("The setup network will open"));
       delay(1500);
       Net_ResetWifi();
     }

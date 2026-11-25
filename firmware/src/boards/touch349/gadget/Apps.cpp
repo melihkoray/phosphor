@@ -83,7 +83,7 @@ void Apps_DrawMenu(Mode menu)
       a.icon(ix, iy + 1, HALO);
     }
     a.icon(ix, iy, LIT);
-    const char *name = L(a.en, a.tr);
+    const char *name = T(a.en);
     int p = 2;
     int tw = textWidth(name, p);
     text(name, x + (w - tw) / 2, TILE_Y + TILE_H - 36, p, LIT_INK);

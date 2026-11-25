@@ -114,7 +114,7 @@ menu (in a game, from the pause or title screen).
 
 ![The Settings page, Amiga-style](media/screens/settings-amiga.png)
 
-The last page. Look, clock style, temperature unit, language (English or Turkish), brightness, city, auto page turn,
+The last page. Look, clock style, temperature unit, language (English, Turkish or Polish), brightness, city, auto page turn,
 holiday lights, night dimming, which pages show, help pages for every gesture, Wi-Fi (with a QR code that opens the
 settings page on your phone) and About (version, and a note when a newer one is out).
 
@@ -136,7 +136,7 @@ V2; V1 is untested: see the note at the top) and a USB-C data cable.
    name from step 2, for example `http://desk.local/settings`. If the phone cannot open `.local` addresses
    (some Android phones), use the board's IP address from **Settings > Wi-Fi**. There you set:
    - **City:** search by name; weather and the time zone follow it.
-   - **Language:** English or Turkish screen texts.
+   - **Language:** English, Turkish or Polish screen texts.
    - **Clock:** 12 or 24 hour.
    - **Focus timer:** focus, short and long break minutes.
    - **Radio:** groups and stations. Search [Radio Browser](https://www.radio-browser.info) or paste a stream URL,

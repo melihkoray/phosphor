@@ -151,49 +151,49 @@ void addCard(Hand &h, uint32_t when)
 // ---------------------------------------------------------------------------------------------------------------------
 
 struct Line {
-  const char *en, *tr;
+  const char *en;
 };
 
-const Line LINES_START[] = { { "Ten hands. Most wins takes it.", "10 el. En çok kazanan alır." },
-                             { "Ten hands, you and me.", "10 el, sen ve ben." } };
-const Line LINES_DEAL[] = { { "Cards are flying. Pray.", "Kartlar uçuyor. Dua et." },
-                            { "Let's see what luck brings.", "Bakalım şans ne getirecek." },
-                            { "Shuffled by hand. Mine.", "Elle karıştırdım. Hem de benim elimle." } };
-const Line LINES_HIT[] = { { "Another one? Brave.", "Bir tane daha mı? Cesursun." },
-                           { "Greedy. I like it.", "Açgözlü. Hoşuma gitti." },
-                           { "Knock knock. Who's there? A card.", "Tık tık. Kim o? Kart." } };
-const Line LINES_PBUST[] = { { "Busted! Delicious.", "Patladın! Nefis." }, { "The house thanks you.", "Kasa teşekkür eder." } };
-const Line LINES_DBUST[] = { { "Oh no... I busted.", "Olamaz... patladım." }, { "That was not in the plan.", "Bu planda yoktu." } };
-const Line LINES_PBJ[] = { { "Blackjack?! Who tipped you?", "Blackjack mı?! Kim söyledi sana?" }, { "Okay, okay. Take it.", "Tamam tamam. Al götür." } };
-const Line LINES_PUSH[] = { { "A tie. Nobody cries.", "Berabere. Kimse ağlamasın." }, { "Push. We call it friendship.", "Berabere. Buna dostluk deriz." } };
-const Line LINES_DWIN[] = { { "The house always wins.", "Kasa her zaman kazanır." },
-                            { "One more for the house.", "Bir sayı da kasaya." },
-                            { "Better luck next hand.", "Gelecek ele şans." } };
-const Line LINES_PWIN[] = { { "Beginner's luck.", "Acemi şansı." }, { "Enjoy it. It won't last.", "Tadını çıkar. Uzun sürmez." }, { "Hm. I let you win.", "Hm. Kazanmana izin verdim." } };
-const Line LINES_DBJ[] = { { "Blackjack. Sorry, not sorry.", "Blackjack. Üzgünüm, değilim." } };
-const Line LINES_IDLE[] = { { "Hello? I have a family.", "Alo? Benim de ailem var." },
-                            { "Decide. The house is getting cold.", "Karar ver, kasa soğuyor." },
-                            { "Are you shy? Don't be.", "Utandın mı? Utanma." } };
-const Line LINES_POKE[] = { { "Hands off the dealer.", "Krupiyeye dokunma." }, { "Stop it. I'm ticklish.", "Yapma. Gıdığım var." } };
-const Line LINES_SHUFFLE[] = { { "New deck. Fresh start.", "Yeni deste. Temiz sayfa." } };
-const Line LINES_MWIN[] = { { "You took the match. I need a holiday.", "Maçı aldın. Bana tatil lazım." },
-                            { "Fine. You win. This time.", "Peki. Kazandın. Bu seferlik." } };
-const Line LINES_MLOSE[] = { { "The match is mine. As always.", "Maç benim. Her zamanki gibi." },
-                             { "Better luck next match.", "Gelecek maça artık." } };
-const Line LINES_MDRAW[] = { { "A draw. Rematch?", "Berabere. Rövanş?" } };
+const Line LINES_START[] = { { N_("Ten hands. Most wins takes it.") },
+                             { N_("Ten hands, you and me.") } };
+const Line LINES_DEAL[] = { { N_("Cards are flying. Pray.") },
+                            { N_("Let's see what luck brings.") },
+                            { N_("Shuffled by hand. Mine.") } };
+const Line LINES_HIT[] = { { N_("Another one? Brave.") },
+                           { N_("Greedy. I like it.") },
+                           { N_("Knock knock. Who's there? A card.") } };
+const Line LINES_PBUST[] = { { N_("Busted! Delicious.") }, { N_("The house thanks you.") } };
+const Line LINES_DBUST[] = { { N_("Oh no... I busted.") }, { N_("That was not in the plan.") } };
+const Line LINES_PBJ[] = { { N_("Blackjack?! Who tipped you?") }, { N_("Okay, okay. Take it.") } };
+const Line LINES_PUSH[] = { { N_("A tie. Nobody cries.") }, { N_("Push. We call it friendship.") } };
+const Line LINES_DWIN[] = { { N_("The house always wins.") },
+                            { N_("One more for the house.") },
+                            { N_("Better luck next hand.") } };
+const Line LINES_PWIN[] = { { N_("Beginner's luck.") }, { N_("Enjoy it. It won't last.") }, { N_("Hm. I let you win.") } };
+const Line LINES_DBJ[] = { { N_("Blackjack. Sorry, not sorry.") } };
+const Line LINES_IDLE[] = { { N_("Hello? I have a family.") },
+                            { N_("Decide. The house is getting cold.") },
+                            { N_("Are you shy? Don't be.") } };
+const Line LINES_POKE[] = { { N_("Hands off the dealer.") }, { N_("Stop it. I'm ticklish.") } };
+const Line LINES_SHUFFLE[] = { { N_("New deck. Fresh start.") } };
+const Line LINES_MWIN[] = { { N_("You took the match. I need a holiday.") },
+                            { N_("Fine. You win. This time.") } };
+const Line LINES_MLOSE[] = { { N_("The match is mine. As always.") },
+                             { N_("Better luck next match.") } };
+const Line LINES_MDRAW[] = { { N_("A draw. Rematch?") } };
 
 struct Table {
   const Line *l;
   int n;
   int8_t pose;
 };
-#define T(a, p) { a, (int)(sizeof(a) / sizeof(a[0])), p }
+#define TABLE(a, p) { a, (int)(sizeof(a) / sizeof(a[0])), p }
 const Table TABLES[EV_COUNT] = {
-  T(LINES_START, -1), T(LINES_DEAL, -1), T(LINES_HIT, -1), T(LINES_PBUST, P_SMUG), T(LINES_DBUST, P_SAD), T(LINES_PBJ, P_SHOCK),
-  T(LINES_PUSH, -1), T(LINES_DWIN, P_SMUG), T(LINES_PWIN, P_SAD), T(LINES_DBJ, P_SMUG), T(LINES_IDLE, -1), T(LINES_POKE, -1),
-  T(LINES_SHUFFLE, -1), T(LINES_MWIN, P_SAD), T(LINES_MLOSE, P_SMUG), T(LINES_MDRAW, -1),
+  TABLE(LINES_START, -1), TABLE(LINES_DEAL, -1), TABLE(LINES_HIT, -1), TABLE(LINES_PBUST, P_SMUG), TABLE(LINES_DBUST, P_SAD), TABLE(LINES_PBJ, P_SHOCK),
+  TABLE(LINES_PUSH, -1), TABLE(LINES_DWIN, P_SMUG), TABLE(LINES_PWIN, P_SAD), TABLE(LINES_DBJ, P_SMUG), TABLE(LINES_IDLE, -1), TABLE(LINES_POKE, -1),
+  TABLE(LINES_SHUFFLE, -1), TABLE(LINES_MWIN, P_SAD), TABLE(LINES_MLOSE, P_SMUG), TABLE(LINES_MDRAW, -1),
 };
-#undef T
+#undef TABLE
 
 void say(Ev e)
 {
@@ -201,7 +201,7 @@ void say(Ev e)
   int i = (int)(esp_random() % (uint32_t)t.n);
   if (t.n > 1 && i == last_line[e]) i = (i + 1) % t.n;
   last_line[e] = i;
-  strlcpy(bubble, L(t.l[i].en, t.l[i].tr), sizeof(bubble));
+  strlcpy(bubble, T(t.l[i].en), sizeof(bubble));
   bubble_until = millis() + BUBBLE_MS;
   react = t.pose;
   nudge_ms = millis();
@@ -755,13 +755,13 @@ void drawBubble(const Pal &p)
 const char *resultText()
 {
   switch (out) {
-    case Out::Blackjack: return L("BLACKJACK!", "BLACKJACK!");
-    case Out::Win: return L("YOU WIN", "KAZANDIN");
-    case Out::DealerBust: return L("DEALER BUSTS", "KASA PATLADI");
-    case Out::Push: return L("PUSH", "BERABERE");
-    case Out::Bust: return L("BUST", "PATLADIN");
-    case Out::DealerBlackjack: return L("DEALER BLACKJACK", "KASADA BLACKJACK");
-    case Out::Lose: return L("DEALER WINS", "KASA KAZANDI");
+    case Out::Blackjack: return T("BLACKJACK!");
+    case Out::Win: return T("YOU WIN");
+    case Out::DealerBust: return T("DEALER BUSTS");
+    case Out::Push: return T("PUSH");
+    case Out::Bust: return T("BUST");
+    case Out::DealerBlackjack: return T("DEALER BLACKJACK");
+    case Out::Lose: return T("DEALER WINS");
     default: return "";
   }
 }
@@ -806,19 +806,19 @@ void drawPips()
 void drawSide(uint32_t now)
 {
   drawScore(SIDE_X + 6, 6, SIDE_W - 12, 4);
-  const char *you = L("YOU", "SEN"), *him = L("HOUSE", "KASA");
+  const char *you = T("YOU"), *him = T("HOUSE");
   text(you, SIDE_X + 6, 37, 1, DIM_INK);
   text(him, SIDE_X + SIDE_W - 6 - textWidth(him, 1), 37, 1, DIM_INK);
   drawPips();
   bool unlocked = (int32_t)(now - lock_until) >= 0;
   int big = H - 4 - BTN_Y0;
   if (ph == Ph::Start || ph == Ph::Result || ph == Ph::Over) {
-    const char *label = ph == Ph::Over ? L("AGAIN", "TEKRAR") : (hands_done >= HANDS ? L("RESULT", "SONUÇ") : L("DEAL", "DAĞIT"));
+    const char *label = ph == Ph::Over ? T("AGAIN") : (hands_done >= HANDS ? T("RESULT") : T("DEAL"));
     button(SIDE_X, BTN_Y0, SIDE_W, big, label, unlocked);
   } else {
     bool mine = ph == Ph::Player && unlocked;
-    button(SIDE_X, BTN_Y0, SIDE_W, BTN_H, L("HIT", "KART"), mine);
-    button(SIDE_X, BTN_Y0 + BTN_PITCH, SIDE_W, BTN_H, L("STAND", "DUR"), mine);
+    button(SIDE_X, BTN_Y0, SIDE_W, BTN_H, T("HIT"), mine);
+    button(SIDE_X, BTN_Y0 + BTN_PITCH, SIDE_W, BTN_H, T("STAND"), mine);
     if (ph == Ph::Player && knock_n == 1) {  // one knock heard: STAND unless a second comes
       uint16_t c = theme::current() == theme::VFD ? HOT : 0xFFFF;
       frame(SIDE_X - 3, BTN_Y0 + BTN_PITCH - 3, SIDE_W + 6, BTN_H + 6, c);
@@ -832,14 +832,14 @@ void drawStartScreen()
 {
   const char *t = "21";
   text(t, 506 - textWidth(t, 7) - 6, 12, 7, HOT_INK);
-  const char *n = L("10 HANDS", "10 EL");
+  const char *n = T("10 HANDS");
   text(n, 506 - textWidth(n, 3) - 6, 132, 3, LIT_INK);  // low: the dealer's bubble covers the middle
 }
 
 // After the tenth hand: who took the match, and the score.
 void drawOverScreen(uint32_t now)
 {
-  const char *r = p_wins > d_wins ? L("YOU WIN", "KAZANDIN") : (p_wins < d_wins ? L("HOUSE WINS", "KASA KAZANDI") : L("DRAW", "BERABERE"));
+  const char *r = p_wins > d_wins ? T("YOU WIN") : (p_wins < d_wins ? T("HOUSE WINS") : T("DRAW"));
   bool flash = p_wins > d_wins && (int32_t)(now - result_ms) < 2400 && ((now - result_ms) / 200) % 2;
   feltText(r, 112, 4, p_wins > d_wins ? (flash ? HOT_INK : LIT_INK) : (p_wins < d_wins ? HOT_INK : LIT_INK));
   int x0 = DLR_W + 2, w = SIDE_X - 6 - x0;
@@ -1057,6 +1057,6 @@ uint32_t blackjackFrameMs()
 
 }  // namespace
 
-const App APP_BLACKJACK = { "blackjack", "21", "21", iconBlackjack, true, true, blackjackEnter, blackjackExit, blackjackDraw, blackjackGesture, blackjackTick, blackjackFrameMs, nullptr, nullptr, blackjackTouch };
+const App APP_BLACKJACK = { "blackjack", N_("21"), iconBlackjack, true, true, blackjackEnter, blackjackExit, blackjackDraw, blackjackGesture, blackjackTick, blackjackFrameMs, nullptr, nullptr, blackjackTouch };
 
 #endif

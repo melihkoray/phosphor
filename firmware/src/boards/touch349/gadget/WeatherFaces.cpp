@@ -157,8 +157,8 @@ void WeatherFaces_Draw(const WeatherFace &f)
     text(s.c_str(), x, y, p, { color });
   };
   uint16_t secondary = atari ? PEACH : BLUE;
-  String hum = settings::tr() ? "%" + String(f.weather.humidity) : String(f.weather.humidity) + "%";
-  String humLine = String(L("HUM ", "NEM ")) + hum, windLine = String(L("WIND ", "RÜZGAR ")) + String(f.weather.wind);
+  String hum = Percent(f.weather.humidity);
+  String humLine = String(T("HUM ")) + hum, windLine = String(T("WIND ")) + String(f.weather.wind);
   // The VFD split (big condition, two reading lines beside it) only where the theme font leaves room before the
   // forecast at x 268; the 8 px machine fonts fall back to the two-line layout sooner.
   int readX = max(140, 20 + textWidth(f.condition.c_str(), 3) + 12);
@@ -172,7 +172,7 @@ void WeatherFaces_Draw(const WeatherFace &f)
   } else {
     reading(f.condition, 20, 126, 2, WHITE);
     if (f.weather.valid) reading(hum + "  " + String(f.weather.wind) +
-      (settings::fahrenheit() ? " MPH" : L(" KM/H", " KM/SA")), 20, 150, 2, secondary);
+      (settings::fahrenheit() ? " MPH" : T(" KM/H")), 20, 150, 2, secondary);
   }
   for (int i = 0; i < 3; i++) {
     const WeatherDay &d = f.weather.next[i];

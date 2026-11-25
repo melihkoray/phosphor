@@ -8,7 +8,7 @@
 //   city=Lisbon
 //   lat=38.7167
 //   lon=-9.1333
-//   lang=tr                 tr | en
+//   lang=tr                 en | tr | pl (the codes in the language files, Lang.cpp); an unknown code is English
 //   h24=1                   24-hour clock
 //   unit=c                  c | f, temperatures (and wind in mph with f)
 //   focus=25  short=5  long=15   pomodoro minutes
@@ -17,6 +17,7 @@
 //   station=0|Heart 80s|http://...   group index | name | stream URL (MP3 or AAC over HTTP/HTTPS)
 
 #include <Arduino.h>
+#include "Lang.h"
 
 struct RadioGroup {
   String key;   // on the preset button
@@ -39,7 +40,7 @@ String text();                               // all settings in the file format
 bool apply(const String &body, String &err); // parse, check, save, take effect
 uint32_t version();                          // goes up on every apply (weather refetches, radio reloads)
 
-bool tr();  // Turkish texts on screen, else English
+lang::Id language();  // of the texts on screen
 bool h24();
 bool fahrenheit();
 // Night dim: 0 = off, 1 = 22:00-07:00, 2 = 23:00-07:00, 3 = 00:00-08:00. The screen goes down to NIGHT_DIM_PCT.
@@ -70,6 +71,3 @@ void tick();  // main loop: applies a new time zone
 
 // The /settings page (SettingsPage.cpp).
 extern const char SETTINGS_PAGE[];
-
-// Pick the text for the current language.
-inline const char *L(const char *en, const char *tr) { return settings::tr() ? tr : en; }

@@ -57,8 +57,8 @@ void Forecast_Draw(const WeatherNow &w, const char *const days[3])
     centered((String(d.t_max) + "°").c_str(), cx - 36, 100, 4, LIT_INK);
     centered((String(d.t_min) + "°").c_str(), cx + 56, 108, 3, DIM_INK);
     if (d.rain >= 0) {
-      String r = String(settings::tr() ? "%" + String(d.rain) : String(d.rain) + "%");
-      centered((String(L("RAIN ", "YAĞIŞ ")) + r).c_str(), cx, 142, 2, d.rain >= 50 ? HOT_INK : DIM_INK);
+      String r = Percent(d.rain);
+      centered((String(T("RAIN ")) + r).c_str(), cx, 142, 2, d.rain >= 50 ? HOT_INK : DIM_INK);
     }
   }
 }

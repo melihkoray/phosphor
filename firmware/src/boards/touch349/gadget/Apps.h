@@ -11,7 +11,7 @@
 
 struct App {
   const char *key;          // /cmd name=app arg=<key>
-  const char *en, *tr;      // tile name: up to 9 letters
+  const char *en;           // tile name: up to 9 letters
   // The tile icon, drawn in a 48 x 48 box at (x, y) in one color; the menu adds the glow.
   void (*icon)(int x, int y, uint16_t color);
   bool needs_speaker;       // the radio is paused while the app is open and resumes when it closes

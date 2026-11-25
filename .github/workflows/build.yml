@@ -59,6 +59,12 @@ jobs:
           arduino-cli core update-index --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
           arduino-cli core install esp32:esp32@3.3.12 --additional-urls https://espressif.github.io/arduino-esp32/package_esp32_index.json
 
+      - name: Host tests of the screen texts
+        run: |
+          python3 tools/test_check_i18n.py
+          g++ -std=c++17 -O2 -Wall -Wextra -Wformat=2 -o /tmp/lang_test firmware/test/lang_test.cpp firmware/src/boards/touch349/gadget/Lang*.cpp
+          /tmp/lang_test
+
       - name: Build
         run: ./build.sh
         env:

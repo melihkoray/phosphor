@@ -40,25 +40,25 @@ static Preferences prefs;
 // The swipe ring, in order. The key is what "hide=" in the settings file and the web page use.
 struct PageInfo {
   Mode mode;
-  const char *key, *en, *tr;
+  const char *key, *en;
   bool can_hide;
 };
 static const PageInfo PAGES[] = {
-  { Mode::Clock, "clock", "CLOCK", "SAAT", false },
-  { Mode::Radio, "radio", "RADIO", "RADYO", true },
-  { Mode::Weather, "weather", "WEATHER", "HAVA DURUMU", true },
-  { Mode::Timer, "timer", "TIMER", "SAYAÇ", true },
-  { Mode::Study, "study", "FOCUS", "ODAK", true },
-  { Mode::Hourglass, "hourglass", "HOURGLASS", "KUM SAATİ", true },
-  { Mode::Aquarium, "aquarium", "FISH TANK", "AKVARYUM", true },
-  { Mode::Snow, "snow", "SNOW", "KAR", true },
-  { Mode::Fire, "fire", "FIREPLACE", "ŞÖMİNE", true },
-  { Mode::Sea, "sea", "LIGHTHOUSE", "FENER", true },
-  { Mode::Wave, "wave", "SHIP", "GEMİ", true },
-  { Mode::Lava, "lava", "LAVA LAMP", "LAV LAMBASI", true },
-  { Mode::Tools, "tools", "TOOLS", "ARAÇLAR", true },
-  { Mode::Play, "play", "PLAY", "OYUN", true },
-  { Mode::Settings, "settings", "SETTINGS", "AYARLAR", false },
+  { Mode::Clock, "clock", N_("CLOCK"), false },
+  { Mode::Radio, "radio", N_("RADIO"), true },
+  { Mode::Weather, "weather", N_("WEATHER"), true },
+  { Mode::Timer, "timer", N_("TIMER"), true },
+  { Mode::Study, "study", N_("FOCUS"), true },
+  { Mode::Hourglass, "hourglass", N_("HOURGLASS"), true },
+  { Mode::Aquarium, "aquarium", N_("FISH TANK"), true },
+  { Mode::Snow, "snow", N_("SNOW"), true },
+  { Mode::Fire, "fire", N_("FIREPLACE"), true },
+  { Mode::Sea, "sea", N_("LIGHTHOUSE"), true },
+  { Mode::Wave, "wave", N_("SHIP"), true },
+  { Mode::Lava, "lava", N_("LAVA LAMP"), true },
+  { Mode::Tools, "tools", N_("TOOLS"), true },
+  { Mode::Play, "play", N_("PLAY"), true },
+  { Mode::Settings, "settings", N_("SETTINGS"), false },
 };
 static constexpr int PAGE_COUNT = sizeof(PAGES) / sizeof(PAGES[0]);
 
@@ -71,25 +71,14 @@ static bool pageInRing(int i)
 }
 static bool pageListed(const PageInfo &p) { return (p.mode != Mode::Play && p.mode != Mode::Tools) || Apps_Count(p.mode) > 0; }
 
-static const char *const WEEKDAYS_TR[] = { "PAZ", "PZT", "SAL", "ÇAR", "PER", "CUM", "CMT" };
-static const char *const WEEKDAYS_EN[] = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
-static const char *const MONTHS_TR[] = { "OCAK", "ŞUBAT", "MART", "NİSAN", "MAYIS", "HAZİRAN",
-                                      "TEMMUZ", "AĞUSTOS", "EYLÜL", "EKİM", "KASIM", "ARALIK" };
-static const char *const MONTHS_EN[] = { "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC" };
-static const char *const WEEKDAYS_LONG_TR[] = { "Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi" };
-static const char *const WEEKDAYS_LONG_EN[] = { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
 static const char *weekdayName(int d, bool long_name = false)
 {
   d = constrain(d, 0, 6);
-  if (long_name) return (settings::tr() ? WEEKDAYS_LONG_TR : WEEKDAYS_LONG_EN)[d];
-  return (settings::tr() ? WEEKDAYS_TR : WEEKDAYS_EN)[d];
+  return long_name ? Lang().weekday_long[d] : Lang().weekday_short[d];
 }
-static const char *monthName(int m) { return (settings::tr() ? MONTHS_TR : MONTHS_EN)[constrain(m, 1, 12) - 1]; }
+static const char *monthName(int m) { return Lang().month_upper[constrain(m, 1, 12) - 1]; }
 // For the long date of the machine themes, whose fonts have lower case ("Saturday 21 Nov").
-static const char *const MONTHS_TITLE_TR[] = { "Ocak", "Şubat", "Mart", "Nisan", "Mayıs", "Haziran",
-                                             "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık" };
-static const char *const MONTHS_TITLE_EN[] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-static const char *monthTitle(int m) { return (settings::tr() ? MONTHS_TITLE_TR : MONTHS_TITLE_EN)[constrain(m, 1, 12) - 1]; }
+static const char *monthTitle(int m) { return Lang().month_title[constrain(m, 1, 12) - 1]; }
 
 // Alarm
 static bool alarm_on = false;
@@ -108,9 +97,9 @@ static uint32_t volume_shown_ms = 0;
 // One-line banner over the bottom of the page: first-visit hints and prompts. Cleared when the page changes.
 static String banner;
 static uint32_t banner_until_ms = 0;
-static void showBanner(const char *en, const char *tr, uint32_t ms)
+static void showBanner(const char *en, uint32_t ms)
 {
-  banner = settings::tr() ? tr : en;
+  banner = T(en);
   banner_until_ms = millis() + ms;
   state.dirty = true;
 }
@@ -121,24 +110,24 @@ static bool bannerOn() { return banner_until_ms && (int32_t)(banner_until_ms - m
 // bits (bit = Mode value) are kept in NVS ("hints2"); POST /cmd name=hints arg=reset brings them all back.
 struct Hint {
   Mode mode;
-  const char *en, *tr;  // same wording as the Settings > Help pages
+  const char *en;  // same wording as the Settings > Help pages
 };
 static const Hint HINTS[] = {
-  { Mode::Clock, "TAP THE BELL: ALARM ON/OFF", "ZİLE DOKUN: ALARM AÇ/KAPA" },
-  { Mode::Radio, "TAP: PLAY / STOP", "DOKUN: ÇAL / DURDUR" },
-  { Mode::Weather, "SWIPE LEFT/RIGHT: NEXT PAGE", "SAĞA/SOLA KAYDIR: SAYFA" },
-  { Mode::Timer, "TAP: START / PAUSE", "DOKUN: BAŞLAT / DURAKLAT" },
-  { Mode::Study, "TAP: START / PAUSE", "DOKUN: BAŞLAT / DURAKLAT" },
-  { Mode::Hourglass, "HOURGLASS: TILT TO POUR", "KUM SAATİ: EĞ, KUM AKSIN" },
-  { Mode::Aquarium, "FISH TANK: TAP TO FEED", "AKVARYUM: DOKUN, YEM AT" },
-  { Mode::Snow, "SNOW: TAP OR SHAKE TO STIR", "KAR: DOKUN YA DA SALLA" },
-  { Mode::Fire, "FIREPLACE: TAP, CAT WAKES", "ŞÖMİNE: DOKUN, KEDİ UYANSIN" },
-  { Mode::Sea, "LIGHTHOUSE: TAP, BIG WAVE", "FENER: DOKUN, BÜYÜK DALGA" },
-  { Mode::Wave, "SHIP: TAP THE WATER", "GEMİ: SUYA DOKUN" },
-  { Mode::Lava, "LAVA LAMP: TAP, NEW COLORS", "LAV LAMBASI: DOKUN, YENİ RENK" },
-  { Mode::Tools, "TOOLS: TAP A TILE TO OPEN IT", "ARAÇLAR: DOKUN, AÇILSIN" },
-  { Mode::Play, "PLAY: TAP A TILE TO OPEN IT", "OYUN: DOKUN, AÇILSIN" },
-  { Mode::Settings, "SWIPE UP/DOWN: PICK AN ITEM", "YUKARI/AŞAĞI KAYDIR: SEÇ" },
+  { Mode::Clock, N_("TAP THE BELL: ALARM ON/OFF") },
+  { Mode::Radio, N_("TAP: PLAY / STOP") },
+  { Mode::Weather, N_("SWIPE LEFT/RIGHT: NEXT PAGE") },
+  { Mode::Timer, N_("TAP: START / PAUSE") },
+  { Mode::Study, N_("TAP: START / PAUSE") },
+  { Mode::Hourglass, N_("HOURGLASS: TILT TO POUR") },
+  { Mode::Aquarium, N_("FISH TANK: TAP TO FEED") },
+  { Mode::Snow, N_("SNOW: TAP OR SHAKE TO STIR") },
+  { Mode::Fire, N_("FIREPLACE: TAP, CAT WAKES") },
+  { Mode::Sea, N_("LIGHTHOUSE: TAP, BIG WAVE") },
+  { Mode::Wave, N_("SHIP: TAP THE WATER") },
+  { Mode::Lava, N_("LAVA LAMP: TAP, NEW COLORS") },
+  { Mode::Tools, N_("TOOLS: TAP A TILE TO OPEN IT") },
+  { Mode::Play, N_("PLAY: TAP A TILE TO OPEN IT") },
+  { Mode::Settings, N_("SWIPE UP/DOWN: PICK AN ITEM") },
 };
 static uint32_t hints_seen = 0;
 #define HINT_MS 3000
@@ -372,7 +361,7 @@ static void drawClock(const DateTime &now)
     String date = String(now.day) + " " + monthName(now.month);
     ClockFace face = { hhmm(now), String(weekdayName(wd)) + " " + date,
                        String(weekdayName(wd, true)) + " " + String(now.day) + " " + monthTitle(now.month),
-                       ringing ? String(L("WAKE UP!", "UYAN!")) : two(alarm_h) + ":" + two(alarm_m),
+                       ringing ? String(T("WAKE UP!")) : two(alarm_h) + ":" + two(alarm_m),
                        alarm_on && (!ringing || blinkOn(300)), ringing, now.second % 2 == 0, state.batt_pct, state.charging,
                        String(weekdayName(wd, true)), String(weekdayName(wd)), date,
                        settings::h24() ? "24H" : now.hour < 12 ? "AM" : "PM",
@@ -406,9 +395,9 @@ static void drawClock(const DateTime &now)
   if (*UpdateCheck_Newer()) {  // a newer release exists (Settings > About has the details)
     static const char *const ARROW[] = { "..#..", ".###.", "#.#.#", "..#..", "..#.." };
     sprite(ARROW, 5, 412, 88, 2, HOT);
-    text(L("NEW", "YENİ"), 428, 88, 2, DIM_INK);
+    text(T("NEW"), 428, 88, 2, DIM_INK);
   }
-  text(ringing ? L("WAKE UP!", "UYAN!") : "ALARM", 512, 96, 2, alarm_lit ? HOT_INK : GHOST_INK);
+  text(ringing ? T("WAKE UP!") : "ALARM", 512, 96, 2, alarm_lit ? HOT_INK : GHOST_INK);
   String at = two(alarm_h) + ":" + two(alarm_m);
   seg(at.c_str(), 492, 120, 24, 40, 5, 5, alarm_on ? HOT_INK : Ink{ DIM });
   drawBatteryBadge(now);
@@ -417,7 +406,7 @@ static void drawClock(const DateTime &now)
 static void drawVolumeBar(int x, int y)
 {
   int v = Radio_Volume();
-  int end = text(L("VOL", "SES"), x, y, 2, LIT_INK) + 10;
+  int end = text(T("VOL"), x, y, 2, LIT_INK) + 10;
   for (int i = 0; i < 20; i++) {
     bool on = v >= (i + 1) * 5;
     if (on) rect(end + i * 12 - 1, y - 1, 10, 16, HALO);
@@ -445,14 +434,14 @@ static void drawRadio(const DateTime &now)
     f.playing = rs == RadioState::Playing; f.failed = rs == RadioState::Failed;
     f.station_index = st; f.station_count = settings::stationCount();
     f.show_volume = volume_shown_ms && millis() - volume_shown_ms < VOLUME_SHOW_MS;
-    f.volume = Radio_Volume(); f.volume_label = L("VOL", "SES");
+    f.volume = Radio_Volume(); f.volume_label = T("VOL");
     f.group = s.group; f.groups = settings::groupCount();
     for (int i = 0; i < f.groups; i++) { f.genres[i] = settings::group(i).key; f.genres[i].toUpperCase(); }
     switch (rs) {
-      case RadioState::Off: f.line = L("STOPPED: TAP TO PLAY", "DURDU · DOKUN: ÇAL"); break;  // 20 machine cells fit beside the companion
-      case RadioState::Connecting: f.line = String(L("CONNECTING", "BAĞLANIYOR")) + String("...").substring(0, (millis() / 400) % 4); break;
-      case RadioState::Failed: f.line = L("NO SIGNAL: TAP AGAIN", "BAĞLANAMADI · DOKUN"); break;
-      case RadioState::Playing: f.line = Radio_Title(); if (!f.line.length()) f.line = L("LIVE", "CANLI YAYIN"); break;
+      case RadioState::Off: f.line = T("STOPPED: TAP TO PLAY"); break;  // 20 machine cells fit beside the companion
+      case RadioState::Connecting: f.line = String(T("CONNECTING")) + String("...").substring(0, (millis() / 400) % 4); break;
+      case RadioState::Failed: f.line = T("NO SIGNAL: TAP AGAIN"); break;
+      case RadioState::Playing: f.line = Radio_Title(); if (!f.line.length()) f.line = T("LIVE"); break;
     }
     radio_world = true;
     RadioFaces_Draw(f);
@@ -477,15 +466,15 @@ static void drawRadio(const DateTime &now)
     String line;
     Ink ink = DIM_INK;
     switch (rs) {
-      case RadioState::Off: line = L("STOPPED · TAP TO PLAY", "DURDU · ÇALMAK İÇİN DOKUN"); break;
-      case RadioState::Connecting: line = String(L("CONNECTING", "BAĞLANIYOR")) + String("...").substring(0, (millis() / 400) % 4); break;
+      case RadioState::Off: line = T("STOPPED · TAP TO PLAY"); break;
+      case RadioState::Connecting: line = String(T("CONNECTING")) + String("...").substring(0, (millis() / 400) % 4); break;
       case RadioState::Failed:
-        line = L("NO SIGNAL · TAP TO RETRY", "BAĞLANAMADI · TEKRAR DOKUN");
+        line = T("NO SIGNAL · TAP TO RETRY");
         ink = HOT_INK;
         break;
       case RadioState::Playing:
         line = Radio_Title();
-        if (!line.length()) line = L("LIVE", "CANLI YAYIN");
+        if (!line.length()) line = T("LIVE");
         break;
     }
     int w = textWidth(line.c_str(), 2), box = right + 12 - 16;
@@ -811,7 +800,7 @@ static void drawWeather()
   if (theme::current() != theme::VFD) {
     WeatherFace f;
     f.weather = w; f.day = sky_force >= 0 ? !sky_night : w.day; f.sky = sky_force >= 0 ? (Sky)sky_force : w.valid ? w.sky : Sky::Unknown;
-    f.condition = f.sky != Sky::Unknown ? Weather_SkyName(f.sky) : L("WAIT", "BEKLE");
+    f.condition = f.sky != Sky::Unknown ? Weather_SkyName(f.sky) : T("WAIT");
     for (int i = 0; i < 3; i++) f.days[i] = weekdayName(w.next[i].weekday);
     WeatherFaces_Draw(f);
     return;
@@ -833,19 +822,19 @@ static void drawWeather()
 
   Sky s = sky_force >= 0 ? (Sky)sky_force : w.valid ? w.sky : Sky::Unknown;
   bool day = sky_force >= 0 ? !sky_night : w.day;
-  const char *cond = s != Sky::Unknown ? Weather_SkyName(s) : L("WAIT", "BEKLE");
-  String hum = settings::tr() ? "%" + String(w.humidity) : String(w.humidity) + "%";
+  const char *cond = s != Sky::Unknown ? Weather_SkyName(s) : T("WAIT");
+  String hum = Percent(w.humidity);
   if (glyphCount(cond) <= 6) {
     // short sky name in big letters, humidity and wind beside it
     text(cond, 20, 132, 3, 2, LIT_INK);
     if (w.valid) {
-      text((String(L("HUM ", "NEM ")) + hum).c_str(), 140, 126, 2, DIM_INK);
-      text((String(L("WIND ", "RÜZGAR ")) + String(w.wind)).c_str(), 140, 150, 2, DIM_INK);
+      text((String(T("HUM ")) + hum).c_str(), 140, 126, 2, DIM_INK);
+      text((String(T("WIND ")) + String(w.wind)).c_str(), 140, 150, 2, DIM_INK);
     }
   } else {
     // long name ("PARTLY CLOUDY") takes the line; humidity and wind go under it
     text(cond, 20, 126, 2, LIT_INK);
-    if (w.valid) text((hum + "  " + String(w.wind) + (settings::fahrenheit() ? " MPH" : L(" KM/H", " KM/SA"))).c_str(), 20, 150, 2, DIM_INK);
+    if (w.valid) text((hum + "  " + String(w.wind) + (settings::fahrenheit() ? " MPH" : T(" KM/H"))).c_str(), 20, 150, 2, DIM_INK);
   }
 
   drawSky(s, day);
@@ -861,8 +850,8 @@ static void drawWeather()
 }
 
 static const int8_t COUNT_STEPS[] = { -1, 1, 5, 10 };
-static const char *const COUNT_LABELS_TR[] = { "-1 DK", "+1 DK", "+5 DK", "+10 DK", "SIFIR" };
-static const char *const COUNT_LABELS_EN[] = { "-1 MIN", "+1 MIN", "+5 MIN", "+10 MIN", "RESET" };
+static const char *const COUNT_LABELS[] = { N_("-1 MIN"), N_("+1 MIN"), N_("+5 MIN"), N_("+10 MIN"), "RESET" };
+static const char *countLabel(int i) { return i == 4 ? TCTX("count", "RESET") : T(COUNT_LABELS[i]); }
 
 static void drawTimer()
 {
@@ -877,34 +866,34 @@ static void drawTimer()
   if (theme::current() != theme::VFD) {
     TimerFace f;
     f.digits = digits;
-    f.title = L("TIMER", "SAYAÇ");
+    f.title = T("TIMER");
     f.launch_ms = done ? millis() - egg_done_ms : 0;
-    f.setting = String(L("SET ", "AYAR ")) + mss(egg_set_s);
+    f.setting = String(T("SET ")) + mss(egg_set_s);
     f.running = running; f.paused = phase == Phase::Paused; f.done = done;
     f.visible = show && (!done || blinkOn(300));
-    f.state = running ? L("RUNNING", "SAYIYOR") : f.paused ? L("PAUSED", "DURDU") :
-              done ? L("TIME'S UP!", "SÜRE DOLDU!") : egg_set_s ? L("TAP: START", "DOKUN: BAŞLA") : L("PICK A TIME", "SÜRE SEÇ");
+    f.state = running ? T("RUNNING") : f.paused ? T("PAUSED") :
+              done ? T("TIME'S UP!") : egg_set_s ? T("TAP: START") : T("PICK A TIME");
     int32_t total = max<int32_t>(1, egg_set_s * 1000);
     f.progress = phase == Phase::Idle ? 0 : done ? 604 : constrain((int)(604 * (1 - (float)eggLeftMs()/total)),0,604);
-    for (int i=0;i<5;i++) f.buttons[i] = (settings::tr() ? COUNT_LABELS_TR : COUNT_LABELS_EN)[i];
+    for (int i=0;i<5;i++) f.buttons[i] = countLabel(i);
     if (TimerFaces_Draw(f)) return;
   }
   clear();
   seg(digits.c_str(), 20, 12, 70, 100, 12, 12, big);
   Rocket_Draw(done, done ? millis() - egg_done_ms : 0);
 
-  text(L("TIMER", "SAYAÇ"), 470, 16, 3, 2, LIT_INK);
-  text((String(L("SET ", "AYAR ")) + mss(egg_set_s)).c_str(), 470, 50, 2, DIM_INK);
-  const char *l1 = egg_set_s ? L("TAP: START", "DOKUN: BAŞLA") : L("PICK A TIME", "SÜRE SEÇ");
+  text(T("TIMER"), 470, 16, 3, 2, LIT_INK);
+  text((String(T("SET ")) + mss(egg_set_s)).c_str(), 470, 50, 2, DIM_INK);
+  const char *l1 = egg_set_s ? T("TAP: START") : T("PICK A TIME");
   Ink ink = GHOST_INK;
   if (running) {
-    l1 = L("RUNNING", "SAYIYOR");
+    l1 = T("RUNNING");
     ink = LIT_INK;
   } else if (phase == Phase::Paused) {
-    l1 = L("PAUSED", "DURDU");
+    l1 = T("PAUSED");
     ink = DIM_INK;
   } else if (done) {
-    l1 = L("TIME'S UP!", "SÜRE DOLDU!");
+    l1 = T("TIME'S UP!");
     ink = HOT_INK;
   }
   text(l1, 470, 84, 2, ink);
@@ -920,7 +909,7 @@ static void drawTimer()
 
   for (int i = 0; i < 5; i++) {
     int x = 16 + i * 122;
-    const char *n = (settings::tr() ? COUNT_LABELS_TR : COUNT_LABELS_EN)[i];
+    const char *n = countLabel(i);
     frame(x, 136, 116, 28, i == 4 ? GHOST : DIM);
     text(n, x + 58 - textWidth(n, 2) / 2, 143, 2, i == 4 ? DIM_INK : LIT_INK);
   }
@@ -1010,7 +999,7 @@ static void hintTick()
         if (h.mode != state.mode) continue;
         hints_seen |= bit;
         prefs.putUInt("hints2", hints_seen);
-        showBanner(h.en, h.tr, HINT_MS);
+        showBanner(h.en, HINT_MS);
       }
     }
     state.dirty = true;
@@ -1063,7 +1052,7 @@ static void dimTick(const DateTime &now)
              millis() > 30000 && !ringing && !bannerOn() && board().displayOn() != 0) {
     lowbatt_armed = false;  // one question per battery session
     banner_prompt = true;
-    showBanner("LOW BATTERY: DIM SCREEN? TAP = YES", "PİL AZ: EKRAN KISILSIN MI? DOKUN = EVET", LOW_BATT_PROMPT_MS);
+    showBanner(N_("LOW BATTERY: DIM SCREEN? TAP = YES"), LOW_BATT_PROMPT_MS);
   }
 }
 
@@ -1506,7 +1495,7 @@ int Gadget_PageCount()
 const char *Gadget_PageName(int i)
 {
   int k = listedPage(i);
-  return k < 0 ? "" : L(PAGES[k].en, PAGES[k].tr);
+  return k < 0 ? "" : T(PAGES[k].en);
 }
 
 bool Gadget_PageCanHide(int i)

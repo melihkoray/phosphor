@@ -187,7 +187,7 @@ static void labels(uint32_t secs, bool flowing, uint16_t flow, uint16_t idle, ui
   char label[12];
   snprintf(label, sizeof(label), "%lu:%02lu", (unsigned long)(secs / 60), (unsigned long)(secs % 60));
   portraitText(label, 4, flowing ? flow : idle);
-  snprintf(label, sizeof(label), L("%d MIN", "%d DK"), DURATIONS[dur_idx]);
+  snprintf(label, sizeof(label), T("%d MIN"), DURATIONS[dur_idx]);
   portraitText(label, PH * 2 - 20, duration);
 }
 
@@ -380,7 +380,7 @@ void Hourglass_Draw(const char *)
   char buf[12];
   snprintf(buf, sizeof(buf), "%lu:%02lu", (unsigned long)(secs / 60), (unsigned long)(secs % 60));
   text(buf, 3, flowing ? C3 : C1);
-  snprintf(buf, sizeof(buf), settings::tr() ? "%d DK" : "%d MIN", DURATIONS[dur_idx]);
+  snprintf(buf, sizeof(buf), T("%d MIN"), DURATIONS[dur_idx]);
   text(buf, PH - 13, C2);
   present();
 }

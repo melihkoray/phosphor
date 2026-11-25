@@ -239,10 +239,10 @@ static void levelMachine(float ax, float ay, bool flat, bool level)
   mdisc(RX + (int)ox, RY + (int)oy, 16, 0);
   mdisc(RX + (int)ox, RY + (int)oy, 12, air);
 
-  if (millis() < level_note_until) mtext(level_note_clear ? L("ZERO CLEARED", "SIFIR SİLİNDİ") : L("ZERO SET", "SIFIR AYARLANDI"), 24, 14, 2, k.hot);
+  if (millis() < level_note_until) mtext(level_note_clear ? T("ZERO CLEARED") : T("ZERO SET"), 24, 14, 2, k.hot);
   else {
-    mtext(L("SPIRIT LEVEL", "SU TERAZİSİ"), 24, 14, 2, k.dim);
-    if (level) mtext(L("LEVEL", "DÜZ"), 404 - textWidth(L("LEVEL", "DÜZ"), 2), 14, 2, k.good);
+    mtext(T("SPIRIT LEVEL"), 24, 14, 2, k.dim);
+    if (level) mtext(TCTX("readout", "LEVEL"), 404 - textWidth(TCTX("readout", "LEVEL"), 2), 14, 2, k.good);
   }
   char buf[24];
   snprintf(buf, sizeof(buf), "%+.1f°", ax);
@@ -291,12 +291,12 @@ static void levelDraw(const DateTime &)
   Apps_Disc(RX + (int)ox, RY + (int)oy, 12, bubble);
 
   // angles
-  text(L("SPIRIT LEVEL", "SU TERAZİSİ"), TX, 14, 2, DIM_INK);
+  text(T("SPIRIT LEVEL"), TX, 14, 2, DIM_INK);
   if (millis() < level_note_until) {
-    const char *n = level_note_clear ? L("ZERO CLEARED", "SIFIR SİLİNDİ") : L("ZERO SET", "SIFIR AYARLANDI");
+    const char *n = level_note_clear ? T("ZERO CLEARED") : T("ZERO SET");
     text(n, TX + TW - textWidth(n, 2), 14, 2, HOT_INK);
   } else if (level) {
-    text(L("LEVEL", "DÜZ"), TX + TW - textWidth(L("LEVEL", "DÜZ"), 2), 14, 2, HOT_INK);
+    text(TCTX("readout", "LEVEL"), TX + TW - textWidth(TCTX("readout", "LEVEL"), 2), 14, 2, HOT_INK);
   }
   char buf[24];
   snprintf(buf, sizeof(buf), "%+.1f°", ax);
@@ -385,20 +385,20 @@ static void coinMachine(int cx, int cy, int R, int ry, int face)
     mellipse(cx, cy, R - 10, ry - 10, &mid, 1);
   }
   if (ry > 38) {
-    const char *f = face ? "T" : L("H", "Y");
+    const char *f = face ? T("T") : T("H");
     text(f, cx - textWidth(f, 6) / 2 + 2, cy - 19, 6, Ink{ m[0] });
     text(f, cx - textWidth(f, 6) / 2, cy - 21, 6, Ink{ rgb(0, 0, 0) });
   }
   const int X0 = 226;
   if (flipping) mtext("...", X0, 40, 6, k.dim);
   else if (last_face < 0) {
-    mtext(L("TAP TO FLIP", "DOKUN: AT"), X0, 36, 4, k.bright, 400);
-    mtext(L("OR SHAKE IT", "YA DA SALLA"), X0, 78, 2, k.dim);
-  } else mtext(last_face ? L("TAILS", "TURA") : L("HEADS", "YAZI"), X0, 34, 7, last_face ? k.bright : k.hot, 400);
+    mtext(T("TAP TO FLIP"), X0, 36, 4, k.bright, 400);
+    mtext(T("OR SHAKE IT"), X0, 78, 2, k.dim);
+  } else mtext(last_face ? T("TAILS") : T("HEADS"), X0, 34, 7, last_face ? k.bright : k.hot, 400);
   char buf[40];
-  snprintf(buf, sizeof(buf), "%s %u", L("HEADS", "YAZI"), coin_count[0]);
+  snprintf(buf, sizeof(buf), "%s %u", T("HEADS"), coin_count[0]);
   mtext(buf, X0, 128, 3, k.hot, 190);
-  snprintf(buf, sizeof(buf), "%s %u", L("TAILS", "TURA"), coin_count[1]);
+  snprintf(buf, sizeof(buf), "%s %u", T("TAILS"), coin_count[1]);
   mtext(buf, X0 + 204, 128, 3, k.bright, 190);
 }
 
@@ -423,7 +423,7 @@ static void coinDraw(const DateTime &)
   ellipse(CX, cy + 4, R, ry, DIM);  // the rim
   ellipse(CX, cy, R, ry, face ? HOT : LIT);
   if (ry > 38) {
-    const char *f = face ? "T" : L("H", "Y");
+    const char *f = face ? T("T") : T("H");
     text(f, CX - 12, cy - 17, 5, Ink{ BG });
   }
 
@@ -431,16 +431,16 @@ static void coinDraw(const DateTime &)
   if (flipping) {
     text("...", X0, 40, 6, DIM_INK);
   } else if (last_face < 0) {
-    text(L("TAP TO FLIP", "DOKUN: AT"), X0, 48, 4, LIT_INK);
-    text(L("OR SHAKE IT", "YA DA SALLA"), X0, 84, 3, DIM_INK);
+    text(T("TAP TO FLIP"), X0, 48, 4, LIT_INK);
+    text(T("OR SHAKE IT"), X0, 84, 3, DIM_INK);
   } else {
-    const char *w = last_face ? L("TAILS", "TURA") : L("HEADS", "YAZI");
+    const char *w = last_face ? T("TAILS") : T("HEADS");
     text(w, X0, 30, 7, last_face ? HOT_INK : LIT_INK);
   }
   char buf[40];
-  snprintf(buf, sizeof(buf), "%s %u", L("HEADS", "YAZI"), coin_count[0]);
+  snprintf(buf, sizeof(buf), "%s %u", T("HEADS"), coin_count[0]);
   text(buf, X0, 118, 3, LIT_INK);
-  snprintf(buf, sizeof(buf), "%s %u", L("TAILS", "TURA"), coin_count[1]);
+  snprintf(buf, sizeof(buf), "%s %u", T("TAILS"), coin_count[1]);
   text(buf, X0 + 190, 118, 3, HOT_INK);
 }
 
@@ -524,19 +524,18 @@ static void breatheMachine(int CX, int CY, int big, int sz)
   const int X0 = 196;
   bool fresh = !br_running && !br_phase && !br_elapsed && !br_cycles;
   if (fresh) {
-    mtext(L("TAP TO START", "BAŞLAMAK İÇİN DOKUN"), X0, 48, 4, k.bright, 424);
-    mtext(L("BOX BREATHING 4-4-4-4", "KUTU NEFESİ 4-4-4-4"), X0, 92, 2, k.dim);
+    mtext(T("TAP TO START"), X0, 48, 4, k.bright, 424);
+    mtext(T("BOX BREATHING 4-4-4-4"), X0, 92, 2, k.dim);
   } else {
-    static const char *const EN[4] = { "BREATHE IN", "HOLD", "BREATHE OUT", "HOLD" };
-    static const char *const TR[4] = { "NEFES AL", "TUT", "NEFES VER", "TUT" };
-    mtext(L(EN[br_phase], TR[br_phase]), X0, 18, 4, br_phase % 2 ? k.hot : k.bright, 424);
+    static const char *const EN[4] = { N_("BREATHE IN"), N_("HOLD"), N_("BREATHE OUT"), N_("HOLD") };
+    mtext(T(EN[br_phase]), X0, 18, 4, br_phase % 2 ? k.hot : k.bright, 424);
     MachineDigits_Draw(String(4 - (int)(br_elapsed / 1000)), X0, 64, 56, 84, 0, br_phase % 2);
     char buf[24];
-    snprintf(buf, sizeof(buf), "%s %d", L("CYCLES", "TUR"), br_cycles);
+    snprintf(buf, sizeof(buf), "%s %d", T("CYCLES"), br_cycles);
     mtext(buf, 290, 84, 3, k.bright, 330);
-    if (!br_running) mtext(L("PAUSED", "DURAKLADI"), 290, 116, 2, k.hot);
+    if (!br_running) mtext(TCTX("breathe", "PAUSED"), 290, 116, 2, k.hot);
   }
-  const char *b = br_beep ? L("BEEP ON", "BİP AÇIK") : L("BEEP OFF", "BİP KAPALI");
+  const char *b = br_beep ? T("BEEP ON") : T("BEEP OFF");
   mtext(b, 620 - textWidth(b, 2), 144, 2, k.dim);
 }
 
@@ -554,24 +553,23 @@ static void breatheDraw(const DateTime &)
 
   const int X0 = 190;
   bool fresh = !br_running && !br_phase && !br_elapsed && !br_cycles;
-  static const char *const EN[4] = { "BREATHE IN", "HOLD", "BREATHE OUT", "HOLD" };
-  static const char *const TR[4] = { "NEFES AL", "TUT", "NEFES VER", "TUT" };
+  static const char *const EN[4] = { N_("BREATHE IN"), N_("HOLD"), N_("BREATHE OUT"), N_("HOLD") };
   if (fresh) {
-    text(L("TAP TO START", "BAŞLAMAK İÇİN DOKUN"), X0, 52, 3, LIT_INK);
-    text(L("BOX BREATHING 4-4-4-4", "KUTU NEFESİ 4-4-4-4"), X0, 90, 2, DIM_INK);
+    text(T("TAP TO START"), X0, 52, 3, LIT_INK);
+    text(T("BOX BREATHING 4-4-4-4"), X0, 90, 2, DIM_INK);
   } else {
-    text(L(EN[br_phase], TR[br_phase]), X0, 24, 5, br_phase % 2 ? HOT_INK : LIT_INK);
+    text(T(EN[br_phase]), X0, 24, 5, br_phase % 2 ? HOT_INK : LIT_INK);
     char n[4];
     snprintf(n, sizeof(n), "%d", 4 - (int)(br_elapsed / 1000));
     text(n, X0, 84, 8, br_running ? LIT_INK : DIM_INK);
-    if (!br_running) text(L("PAUSED", "DURAKLADI"), X0 + 70, 100, 2, DIM_INK);
+    if (!br_running) text(TCTX("breathe", "PAUSED"), X0 + 70, 100, 2, DIM_INK);
   }
   if (!fresh) {
     char buf[24];
-    snprintf(buf, sizeof(buf), "%s %d", L("CYCLES", "TUR"), br_cycles);
+    snprintf(buf, sizeof(buf), "%s %d", T("CYCLES"), br_cycles);
     text(buf, 360, 100, 3, DIM_INK);
   }
-  text(br_beep ? L("BEEP ON", "BİP AÇIK") : L("BEEP OFF", "BİP KAPALI"), 440, 140, 2, br_beep ? DIM_INK : GHOST_INK);
+  text(br_beep ? T("BEEP ON") : T("BEEP OFF"), 440, 140, 2, br_beep ? DIM_INK : GHOST_INK);
 }
 
 static uint32_t breatheFrameMs() { return br_running ? 40 : 0; }
@@ -655,7 +653,7 @@ static void scoreMachine(bool armed)
     rect(RESET_X, RESET_Y + RESET_H - 2, RESET_W, 2, 0);
     rect(RESET_X + RESET_W - 2, RESET_Y, 2, RESET_H, 0);
   } else frame(RESET_X, RESET_Y, RESET_W, RESET_H, k.bright);
-  const char *label = armed ? L("AGAIN?", "TEKRAR?") : L("RESET", "SIFIRLA");
+  const char *label = armed ? T("AGAIN?") : T("RESET");
   text(label, textX(label, 2, RESET_X, RESET_X + RESET_W), RESET_Y + 7, 2, Ink{ armed ? rgb(0, 0, 0) : k.bright });
 }
 
@@ -675,7 +673,7 @@ static void scoreDraw(const DateTime &)
   bool armed = reset_armed_until && (int32_t)(millis() - reset_armed_until) < 0;
   uint16_t edge = armed ? HOT : DIM;
   frame(RESET_X, RESET_Y, RESET_W, RESET_H, edge);
-  const char *label = armed ? L("AGAIN?", "TEKRAR?") : L("RESET", "SIFIRLA");
+  const char *label = armed ? T("AGAIN?") : T("RESET");
   text(label, textX(label, 2, RESET_X, RESET_X + RESET_W), RESET_Y + 7, 2, armed ? HOT_INK : DIM_INK);
 }
 
@@ -686,13 +684,13 @@ static uint32_t scoreFrameMs() { return reset_armed_until ? 200 : 0; }
 // ---------------------------------------------------------------------------------------------------------------------
 
 struct LampColor {
-  const char *en, *tr;
+  const char *en;
   uint8_t r, g, b;
 };
 static const LampColor LAMP[] = {
-  { "WARM WHITE", "SICAK BEYAZ", 255, 190, 110 }, { "COOL WHITE", "SOĞUK BEYAZ", 205, 225, 255 }, { "AMBER", "KEHRİBAR", 255, 130, 0 },
-  { "RED", "KIRMIZI", 255, 0, 0 },                { "GREEN", "YEŞİL", 0, 230, 40 },                { "BLUE", "MAVİ", 20, 60, 255 },
-  { "RAINBOW", "GÖKKUŞAĞI", 0, 0, 0 },
+  { N_("WARM WHITE"), 255, 190, 110 }, { N_("COOL WHITE"), 205, 225, 255 }, { N_("AMBER"), 255, 130, 0 },
+  { N_("RED"), 255, 0, 0 },                { N_("GREEN"), 0, 230, 40 },                { N_("BLUE"), 20, 60, 255 },
+  { N_("RAINBOW"), 0, 0, 0 },
 };
 static constexpr int LAMP_COUNT = sizeof(LAMP) / sizeof(LAMP[0]), LAMP_RAINBOW = LAMP_COUNT - 1;
 static int lamp_idx = 0, lamp_prev_bright = -1;
@@ -761,7 +759,7 @@ static void lampDraw(const DateTime &)
   if (lamp_name_until && (int32_t)(millis() - lamp_name_until) < 0) {
     int lum = lamp_idx == LAMP_RAINBOW ? 200 : (lc.r * 3 + lc.g * 6 + lc.b) / 10;
     uint16_t ink = lum > 110 ? 0 : 0xFFFF;
-    const char *n = L(lc.en, lc.tr);
+    const char *n = T(lc.en);
     int p = 3;
     MachineFont font;  // the VFD look keeps its own style
     if (!machine()) setStyle(font.saved);
@@ -774,10 +772,10 @@ static uint32_t lampFrameMs() { return lamp_idx == LAMP_RAINBOW ? 50 : 0; }
 
 // ---------------------------------------------------------------------------------------------------------------------
 
-const App APP_LEVEL = { "level", "LEVEL", "TERAZİ", iconLevel, false, false, levelEnter, nullptr, levelDraw, levelGesture, nullptr, levelFrameMs };
-const App APP_COIN = { "coin", "COIN", "YAZI-TURA", iconCoin, false, false, coinEnter, nullptr, coinDraw, coinGesture, coinTick, coinFrameMs };
-const App APP_BREATHE = { "breathe", "BREATHE", "NEFES", iconBreathe, false, false, breatheEnter, nullptr, breatheDraw, breatheGesture, breatheTick, breatheFrameMs };
-const App APP_SCORE = { "score", "SCORE", "SKOR", iconScore, false, false, nullptr, nullptr, scoreDraw, scoreGesture, scoreTick, scoreFrameMs };
-const App APP_LAMP = { "lamp", "LAMP", "LAMBA", iconLamp, false, true, lampEnter, lampExit, lampDraw, lampGesture, lampTick, lampFrameMs };
+const App APP_LEVEL = { "level", N_("LEVEL"), iconLevel, false, false, levelEnter, nullptr, levelDraw, levelGesture, nullptr, levelFrameMs };
+const App APP_COIN = { "coin", N_("COIN"), iconCoin, false, false, coinEnter, nullptr, coinDraw, coinGesture, coinTick, coinFrameMs };
+const App APP_BREATHE = { "breathe", N_("BREATHE"), iconBreathe, false, false, breatheEnter, nullptr, breatheDraw, breatheGesture, breatheTick, breatheFrameMs };
+const App APP_SCORE = { "score", N_("SCORE"), iconScore, false, false, nullptr, nullptr, scoreDraw, scoreGesture, scoreTick, scoreFrameMs };
+const App APP_LAMP = { "lamp", N_("LAMP"), iconLamp, false, true, lampEnter, lampExit, lampDraw, lampGesture, lampTick, lampFrameMs };
 
 #endif

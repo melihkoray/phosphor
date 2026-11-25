@@ -164,10 +164,10 @@ void ClockFaces_Draw(const ClockFace &f)
     rect(492, 80, 132, atari ? 2 : 1, dim);
     if (f.update.length()) {
       sprite(ARROW, 5, 412, 88, 2, hot);
-      label(L("NEW", "YENİ"), 428, 88, hot, amiga);
+      label(T("NEW"), 428, 88, hot, amiga);
     }
     sprite(BELL, 7, 492, 94, 2, alarm);
-    label(f.ringing ? L("WAKE UP!", "UYAN!") : "ALARM", 512, 96, alarm, amiga, 2,
+    label(f.ringing ? T("WAKE UP!") : "ALARM", 512, 96, alarm, amiga, 2,
           f.ringing && amiga ? 14 : 0);
     label(f.alarm_time, 492, 120, f.alarm_on ? hot : dim, amiga, 3);
     if (f.battery >= 0) {
@@ -194,13 +194,13 @@ void ClockFaces_Draw(const ClockFace &f)
   } else {
     label("READY.", 30, 16, BASIC);
     if (f.update.length()) {  // top right, where the cursor line is empty
-      String u = String(L("NEW ", "YENİ ")) + f.update;
+      String u = String(T("NEW ")) + f.update;
       label(u, W - theme::def().border_w - 24 - MachineTextWidth(u), 16, BASIC_DIM);
     }
     if (f.cursor) rect(30, 32, 16, 16, BASIC);
     MachineBlockText(f.time, (W - MachineBlockText(f.time, 0, 0, false)) / 2, 56);
     String date = f.date, alarm = f.ringing ? f.alarm : "ALARM " + f.alarm;
-    String batt = f.battery >= 0 ? "   " + String(L("BATT ", "PİL ")) + String(f.battery) + "%" : "";
+    String batt = f.battery >= 0 ? "   " + String(T("BATT ")) + String(f.battery) + "%" : "";
     int available = W - 2 * (theme::def().border_w + 24);
     if (MachineTextWidth(date + "   " + alarm + batt) > available) batt = "";
     if (MachineTextWidth(date + "   " + alarm) > available)
