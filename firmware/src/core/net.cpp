@@ -52,8 +52,7 @@ static bool services_started = false;
 static uint32_t time_synced_ms = 0;
 static uint32_t last_retry_ms = 0;
 
-static bool ota_authorized = false;
-static bool assets_ok = false;  // the asset pack upload so far
+static bool assets_ok = false;  // the asset pack upload of the current request so far
 static uint8_t *upload_buf = nullptr;
 static size_t upload_len = 0;
 static bool upload_overflow = false;
@@ -99,9 +98,18 @@ static String sanitizeName(String raw)
   return out.length() ? out : defaultName();
 }
 
+// The X-Token of the request being handled. WebServer clears the collected headers at the start of every request and
+// has read them all before the first upload callback, so this holds for the request itself, at every stage of it.
 static bool authorized()
 {
   return strlen(OTA_TOKEN) > 0 && server.header("X-Token") == OTA_TOKEN;
+}
+
+// The request carried a file and it arrived whole. WebServer drops the upload of an earlier request when it starts
+// parsing the next one, and an upload cut off midway (UPLOAD_FILE_ABORTED) never reaches the request handler.
+static bool uploadDone()
+{
+  return server.hasUpload() && server.upload().status == UPLOAD_FILE_END;
 }
 
 static void setTimeout()
@@ -350,8 +358,12 @@ static void setupRoutes()
   server.on(
     "/update", HTTP_POST,
     []() {
-      if (!ota_authorized) {
+      if (!authorized()) {
         server.send(401, "text/plain", "unauthorized\n");
+        return;
+      }
+      if (!uploadDone()) {
+        server.send(400, "text/plain", "no firmware file\n");
         return;
       }
       if (Update.hasError()) {
@@ -362,26 +374,33 @@ static void setupRoutes()
       restartSoon("OK, restarting\n");
     },
     []() {
+      if (!authorized()) {
+        return;  // nothing of an unauthorized request touches the flash
+      }
       HTTPUpload &up = server.upload();
       if (up.status == UPLOAD_FILE_START) {
-        ota_authorized = authorized();
-        if (ota_authorized) {
-          board().showNotice("Updating", "Installing new firmware...");
-          Update.begin(UPDATE_SIZE_UNKNOWN);
-        }
-      } else if (up.status == UPLOAD_FILE_WRITE && ota_authorized) {
+        board().showNotice("Updating", "Installing new firmware...");
+        if (Update.isRunning()) Update.abort();  // begin() refuses while an earlier image is open
+        Update.begin(UPDATE_SIZE_UNKNOWN);
+      } else if (up.status == UPLOAD_FILE_WRITE) {
         Watchdog_Feed();  // a firmware upload keeps loop() inside the handler for many seconds
         Update.write(up.buf, up.currentSize);
-      } else if (up.status == UPLOAD_FILE_END && ota_authorized) {
+      } else if (up.status == UPLOAD_FILE_END) {
         Update.end(true);
+      } else if (up.status == UPLOAD_FILE_ABORTED) {
+        Update.abort();  // the connection broke: drop the half image, the next upload starts afresh
       }
     });
 
   server.on(
     "/assets", HTTP_POST,
     []() {
-      if (!ota_authorized) {
+      if (!authorized()) {
         server.send(401, "text/plain", "unauthorized\n");
+        return;
+      }
+      if (!uploadDone()) {
+        server.send(400, "text/plain", "no asset pack file\n");
         return;
       }
       if (!assets_ok) {
@@ -392,19 +411,20 @@ static void setupRoutes()
       restartSoon("OK, restarting\n");
     },
     []() {
+      if (!authorized()) {
+        return;  // nothing of an unauthorized request touches the flash
+      }
       HTTPUpload &up = server.upload();
       if (up.status == UPLOAD_FILE_START) {
-        ota_authorized = authorized();
-        assets_ok = false;
-        if (ota_authorized) {
-          board().showNotice("Updating", "Installing pictures...");
-          assets_ok = assets::writeBegin();
-        }
-      } else if (up.status == UPLOAD_FILE_WRITE && ota_authorized) {
+        board().showNotice("Updating", "Installing pictures...");
+        assets_ok = assets::writeBegin();
+      } else if (up.status == UPLOAD_FILE_WRITE) {
         Watchdog_Feed();
         if (assets_ok) assets_ok = assets::write(up.buf, up.currentSize);
-      } else if (up.status == UPLOAD_FILE_END && ota_authorized) {
+      } else if (up.status == UPLOAD_FILE_END) {
         assets_ok = assets_ok && assets::writeEnd();
+      } else if (up.status == UPLOAD_FILE_ABORTED) {
+        assets_ok = false;
       }
     });
 
