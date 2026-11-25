@@ -24,6 +24,8 @@
 #include <Update.h>
 #include <Preferences.h>
 #include <esp_mac.h>
+#include <esp_sntp.h>
+#include <atomic>
 #include "net.h"
 #include "Board.h"
 #include "Assets.h"
@@ -43,13 +45,18 @@
 #endif
 
 #define TZ_ISTANBUL "<+03>-3"
-#define TIME_RESYNC_MS (6UL * 3600 * 1000)
 #define WIFI_RETRY_MS 30000
 
 static WebServer server(80);
 static Preferences prefs;
 static bool services_started = false;
-static uint32_t time_synced_ms = 0;
+static uint32_t time_synced_ms = 0;  // when the RTC last got NTP time; 0 before the first answer
+// Why the RTC should get the system time again, as bits: set by the SNTP callback (lwIP's task) or a new time zone,
+// taken all at once by syncTime() in the main loop with exchange(), so no request is lost or taken twice.
+enum : uint32_t { SYNC_NTP = 1, SYNC_ZONE = 2 };
+static std::atomic<uint32_t> sync_wanted{ 0 };
+// The core builds with -mdisable-hardware-atomics, so exchange() and fetch_or() are calls to __atomic_*_4 in IDF's
+// newlib. For a variable in internal RAM, as this one, they are an S32C1I compare-and-swap loop without a lock.
 static uint32_t last_retry_ms = 0;
 
 static bool ota_authorized = false;
@@ -438,6 +445,9 @@ static void startServices()
   MDNS.begin(state.name.c_str());
   MDNS.addService("http", "tcp", 80);
   MDNS.addServiceTxt("http", "tcp", "device", "phosphor");
+  sntp_set_time_sync_notification_cb([](struct timeval *) {  // lwIP's task: no I2C, no printing, no waiting
+    sync_wanted.fetch_or(SYNC_NTP);
+  });
   configTzTime(prefs.getString("tz", TZ_ISTANBUL).c_str(), "pool.ntp.org", "time.google.com");
   setupRoutes();
   server.begin();
@@ -445,10 +455,12 @@ static void startServices()
   Serial.printf("Online: http://%s.local  (%s)\n", state.name.c_str(), Net_Ip().c_str());
 }
 
-// Copies NTP time into the RTC so the clock stays right offline.
+// Copies NTP time into the RTC so the clock stays right offline. Only after an answer from the server: after a software
+// restart (OTA, settings) the system clock still runs, but on the internal RC oscillator over the restart, so it may be
+// minutes off until SNTP sets it; copied then, the RTC kept that error until the next copy.
 static void syncTime()
 {
-  if (time_synced_ms && millis() - time_synced_ms < TIME_RESYNC_MS) {
+  if (!sync_wanted.exchange(0)) {
     return;
   }
   struct tm t;
@@ -560,6 +572,6 @@ void Net_SetTimezone(const char *posix_tz)
   if (prefs.getString("tz", "") != posix_tz) prefs.putString("tz", posix_tz);
   setenv("TZ", posix_tz, 1);
   tzset();
-  time_synced_ms = 0;  // copy the local time into the RTC again
+  if (time_synced_ms) sync_wanted.fetch_or(SYNC_ZONE);  // the system clock has NTP time: copy it again, in the new zone
   Serial.printf("time zone: %s\n", posix_tz);
 }
