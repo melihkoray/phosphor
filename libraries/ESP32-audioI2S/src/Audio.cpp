@@ -178,14 +178,16 @@ uint32_t AudioBuffer::getReadPos() {
 // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 // 📌📌📌  A U D I O   📌📌📌
 // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
-Audio::Audio(uint8_t i2sPort) {
+Audio::Audio(uint8_t i2sPort, bool enableInput) {
 
     mutex_playAudioData = xSemaphoreCreateMutex();
     mutex_audioTask = xSemaphoreCreateMutex();
 
     if (!psramFound()) AUDIO_LOG_ERROR("audioI2S requires PSRAM!");
 
-    clientsecure.setInsecure();
+    // Arduino-ESP32 3.3.12 supplies the Mozilla root bundle. Keep chain, date and hostname verification enabled.
+    clientsecure.useBuiltinCACertBundle();
+    setConnectionTimeout(m_timeout_ms, m_timeout_ms_ssl);
     m_i2s_num = i2sPort; // i2s port number
 
     // -------- I2S configuration -------------------------------------------------------------------------------------------
@@ -196,9 +198,9 @@ Audio::Audio(uint8_t i2sPort) {
     m_i2s_chan_cfg.dma_frame_num = 512;        // I2S frame number in one DMA buffer.
     m_i2s_chan_cfg.auto_clear = true;          // i2s will always send zero automatically if no data to send
     m_i2s_chan_cfg.allow_pd = false;
-    i2s_new_channel(&m_i2s_chan_cfg, &m_i2s_tx_handle,&m_i2s_rx_handle);
+    i2s_new_channel(&m_i2s_chan_cfg, &m_i2s_tx_handle, enableInput ? &m_i2s_rx_handle : nullptr);
     assert(m_i2s_tx_handle != NULL);
-    assert(m_i2s_rx_handle != NULL);
+    assert(!enableInput || m_i2s_rx_handle != NULL);
 
     memset(&m_i2s_std_cfg, 0, sizeof(i2s_std_config_t));
     m_i2s_std_cfg.slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO); // Set to enable bit shift in Philips mode
@@ -215,7 +217,7 @@ Audio::Audio(uint8_t i2sPort) {
     m_i2s_std_cfg.clk_cfg.clk_src = I2S_CLK_SRC_DEFAULT;         // Select PLL_F160M as the default source clock
     m_i2s_std_cfg.clk_cfg.mclk_multiple = I2S_MCLK_MULTIPLE_256; // mclk = sample_rate * 256
     i2s_channel_init_std_mode(m_i2s_tx_handle, &m_i2s_std_cfg);
-    i2s_channel_init_std_mode(m_i2s_rx_handle, &m_i2s_std_cfg);
+    if (m_i2s_rx_handle) i2s_channel_init_std_mode(m_i2s_rx_handle, &m_i2s_std_cfg);
 /*
     int32_t dummy[1024] = {0};
     size_t n;
@@ -239,8 +241,8 @@ Audio::~Audio() {
     stopSong();
     setDefaults();
 
-    i2s_channel_disable(m_i2s_rx_handle);
-    i2s_del_channel(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) i2s_channel_disable(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) i2s_del_channel(m_i2s_rx_handle);
     i2s_channel_disable(m_i2s_tx_handle);
     i2s_del_channel(m_i2s_tx_handle);
     stopAudioTask();
@@ -287,7 +289,7 @@ esp_err_t Audio::I2Sstart() {
     zeroI2Sbuff();
     bool ok = true;
     ok |= i2s_channel_enable(m_i2s_tx_handle);
-    ok |= i2s_channel_enable(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) ok |= i2s_channel_enable(m_i2s_rx_handle);
     return ok;
 }
 // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -297,7 +299,7 @@ esp_err_t Audio::I2Sstop() {
     std::fill(std::begin(m_inputHistory), std::end(m_inputHistory), 0); // Clear history in samplesBuff48K
         bool ok = true;
     ok |= i2s_channel_disable(m_i2s_tx_handle);
-    ok |= i2s_channel_disable(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) ok |= i2s_channel_disable(m_i2s_rx_handle);
     return ok;
 }
 // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -393,9 +395,19 @@ void Audio::setDefaults() {
 }
 
 // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+void Audio::reportTLSFailure() {
+    if (!m_f_ssl) return;
+    char error[160] = {};
+    int code = clientsecure.lastError(error, sizeof(error));
+    // A DNS failure can leave the previous TLS error in the client; report it as the last error.
+    info(*this, evt_info, "TLS connection failed; last TLS error (%d): %s", code, error);
+}
+
 void Audio::setConnectionTimeout(uint16_t timeout_ms, uint16_t timeout_ms_ssl) {
     if (timeout_ms) m_timeout_ms = timeout_ms;
     if (timeout_ms_ssl) m_timeout_ms_ssl = timeout_ms_ssl;
+    // The secure client uses seconds for its handshake limit, independently of the TCP timeout.
+    clientsecure.setHandshakeTimeout((m_timeout_ms_ssl + 999) / 1000);
 }
 
 /*
@@ -676,7 +688,7 @@ bool Audio::connecttohost(const char* host, const char* user, const char* pwd) {
     m_client->setTimeout(m_f_ssl ? m_timeout_ms_ssl : m_timeout_ms);
 
     info(*this, evt_info, "connect to: \"%s\" on port %d path \"/%s\"", hwoe.get(), port, path.get());
-    res = m_client->connect(hwoe.get(), port);
+    res = m_client->connect(hwoe.get(), port, m_f_ssl ? m_timeout_ms_ssl : m_timeout_ms);
 
     m_expectedCodec = CODEC_NONE;
     m_expectedPlsFmt = FORMAT_NONE;
@@ -706,6 +718,7 @@ bool Audio::connecttohost(const char* host, const char* user, const char* pwd) {
         m_dataMode = HTTP_RESPONSE_HEADER; // Handle header
         m_streamType = ST_WEBSTREAM;
     } else {
+        reportTLSFailure();
         AUDIO_LOG_ERROR("Request %s failed!", c_host.get());
         m_f_running = false;
         info(*this, evt_name, "");
@@ -770,7 +783,7 @@ bool Audio::httpPrint(const char* host) {
     cur_hwoe.clone_from(dismantledLastHost.hwoe);
 
     bool f_equal = true;
-    if (hwoe.equals(cur_hwoe)) {
+    if (hwoe.equals(cur_hwoe) && dismantledHost.ssl == dismantledLastHost.ssl && port == dismantledLastHost.port) {
         f_equal = true;
     } else {
         f_equal = false;
@@ -795,13 +808,14 @@ bool Audio::httpPrint(const char* host) {
     if (!m_client->connected()) {
         if (m_f_ssl) {
             m_client = static_cast<NetworkClientSecure*>(&clientsecure);
-            if (m_f_ssl && port == 80) port = 443;
+            if (port == 80) port = 443;
         } else {
             m_client = static_cast<NetworkClient*>(&client);
         }
         if (f_equal) info(*this, evt_info, "The host has disconnected, reconnecting");
 
-        if (!m_client->connect(hwoe.get(), port)) {
+        if (!m_client->connect(hwoe.get(), port, m_f_ssl ? m_timeout_ms_ssl : m_timeout_ms)) {
+            reportTLSFailure();
             AUDIO_LOG_ERROR("connection lost %s", c_host.c_get());
             stopSong();
             return false;
@@ -909,12 +923,13 @@ bool Audio::httpRange(uint32_t seek, uint32_t length) {
     if (m_client->connected()) { m_client->stop(); }
     if (m_f_ssl) {
         m_client = static_cast<NetworkClientSecure*>(&clientsecure);
-        if (m_f_ssl && port == 80) port = 443;
+        if (port == 80) port = 443;
     } else {
         m_client = static_cast<NetworkClient*>(&client);
     }
 
-    if (!m_client->connect(hwoe.get(), port)) {
+    if (!m_client->connect(hwoe.get(), port, m_f_ssl ? m_timeout_ms_ssl : m_timeout_ms)) {
+        reportTLSFailure();
         AUDIO_LOG_ERROR("connection lost %s", c_host.c_get());
         stopSong();
         return false;
@@ -5495,7 +5510,7 @@ bool Audio::setPinout(uint8_t BCLK, uint8_t LRC, uint8_t DOUT, int8_t MCLK, int8
     m_outBuff.alloc(m_outbuffSize, "m_outBuff");
     m_samplesBuff48K.alloc(m_samplesBuff48KSize * sizeof(int16_t));
 
-    if (!m_i2s_tx_handle || !m_i2s_rx_handle) return false;
+    if (!m_i2s_tx_handle) return false;
 
      I2Sstop();
 
@@ -5509,7 +5524,7 @@ bool Audio::setPinout(uint8_t BCLK, uint8_t LRC, uint8_t DOUT, int8_t MCLK, int8
     // 3. Reconfig เฉพาะ GPIO (ลดความซับซ้อนเพื่อป้องกันการ Crash)
     esp_err_t err = ESP_OK;
     err |= i2s_channel_reconfig_std_gpio(m_i2s_tx_handle, &gpio_cfg);
-    err |= i2s_channel_reconfig_std_gpio(m_i2s_rx_handle, &gpio_cfg);
+    if (m_i2s_rx_handle) err |= i2s_channel_reconfig_std_gpio(m_i2s_rx_handle, &gpio_cfg);
 
     I2Sstart();
     return (err == ESP_OK);
@@ -5733,14 +5748,14 @@ bool Audio::setSampleRate(uint32_t sampRate) {
     m_i2s_std_cfg.clk_cfg.sample_rate_hz = m_sampleRate;
 
     i2s_channel_disable(m_i2s_tx_handle);
-    i2s_channel_disable(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) i2s_channel_disable(m_i2s_rx_handle);
 
     // สำคัญมาก: ต้อง Reconfig ทั้งคู่เพื่อให้ BCLK/LRCK เปลี่ยนความถี่พร้อมกัน
     i2s_channel_reconfig_std_clock(m_i2s_tx_handle, &m_i2s_std_cfg.clk_cfg);
-    i2s_channel_reconfig_std_clock(m_i2s_rx_handle, &m_i2s_std_cfg.clk_cfg);
+    if (m_i2s_rx_handle) i2s_channel_reconfig_std_clock(m_i2s_rx_handle, &m_i2s_std_cfg.clk_cfg);
 
     i2s_channel_enable(m_i2s_tx_handle);
-    i2s_channel_enable(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) i2s_channel_enable(m_i2s_rx_handle);
     return true;
 }
 // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
@@ -5806,7 +5821,7 @@ void Audio::setI2SCommFMT_LSB(bool commFMT) {
     //        Japanese or called LSBJ (Least Significant Bit Justified) format
 
     m_f_commFMT = commFMT;
-i2s_channel_disable(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) i2s_channel_disable(m_i2s_rx_handle);
     i2s_channel_disable(m_i2s_tx_handle);
     if (commFMT) {
         info(*this, evt_info, "commFMT = LSBJ (Least Significant Bit Justified)");
@@ -5818,9 +5833,9 @@ i2s_channel_disable(m_i2s_rx_handle);
         m_i2s_std_cfg.slot_cfg = I2S_STD_PHILIPS_SLOT_DEFAULT_CONFIG(I2S_DATA_BIT_WIDTH_16BIT, I2S_SLOT_MODE_STEREO);
     }
     i2s_channel_reconfig_std_slot(m_i2s_tx_handle, &m_i2s_std_cfg.slot_cfg);
-      i2s_channel_reconfig_std_slot(m_i2s_rx_handle, &m_i2s_std_cfg.slot_cfg);
+    if (m_i2s_rx_handle) i2s_channel_reconfig_std_slot(m_i2s_rx_handle, &m_i2s_std_cfg.slot_cfg);
     i2s_channel_enable(m_i2s_tx_handle);
-      i2s_channel_enable(m_i2s_rx_handle);
+    if (m_i2s_rx_handle) i2s_channel_enable(m_i2s_rx_handle);
 }
 // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
 void Audio::computeVUlevel(int16_t sample[2]) {

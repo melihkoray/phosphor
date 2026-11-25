@@ -112,7 +112,8 @@ class Audio {
     uint8_t     m_i2s_num; // I2S_NUM_0 or I2S_NUM_1
 
   public:
-    Audio(uint8_t i2sPort = I2S_NUM_0);
+    // Playback-only devices can omit RX and its internal DMA buffers; getRxHandle() then returns nullptr.
+    Audio(uint8_t i2sPort = I2S_NUM_0, bool enableInput = true);
     ~Audio();
     std::mutex mutex_info; // mutex_info as member
 
@@ -184,6 +185,7 @@ class Audio {
     bool                     fsRange(uint32_t range);
     void                     latinToUTF8(ps_ptr<char>& buff, bool UTF8check = true);
     void                     htmlToUTF8(char* str);
+    void                     reportTLSFailure();
     void                     setDefaults(); // free buffers and set defaults
     int32_t                  audioFileRead(uint8_t* buff = nullptr, size_t len = 0);
     int32_t                  audioFileSeek(uint32_t position, size_t len = 0);

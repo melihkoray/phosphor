@@ -393,6 +393,11 @@ static void connect(int idx)
   title[0] = 0;
   xSemaphoreGive(title_mx);
   amp(true);
+#if CORE_DEBUG_LEVEL >= 3
+  Serial.printf("radio: connect, internal free=%u largest=%u\n",
+                heap_caps_get_free_size(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT),
+                heap_caps_get_largest_free_block(MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT));
+#endif
   audio->connecttohost(url_cur);
 }
 
@@ -467,13 +472,18 @@ void Radio_Begin(I2cMasterBus *i2c, void (*amp_fn)(bool))
     Serial.println("radio: ES8311 not answering");
   }
   Audio::audio_info_callback = [](Audio::msg_t m) {
+    if (m.e == Audio::evt_log && m.msg) Serial.printf("radio: %s\n", m.msg);
+#if CORE_DEBUG_LEVEL >= 3
+    if (m.e == Audio::evt_info && m.msg) Serial.printf("radio: %s\n", m.msg);
+#endif
     if (m.e == Audio::evt_streamtitle && m.msg) {
       xSemaphoreTake(title_mx, portMAX_DELAY);
       strlcpy(title, m.msg, sizeof(title));
       xSemaphoreGive(title_mx);
     }
   };
-  audio = new Audio();
+  // This board only plays audio. RX alone would reserve ~32 KiB of internal DMA RAM needed by TLS.
+  audio = new Audio(0, false);
   // No setAudioTaskCore(0) here: the constructor already starts the audio task on core 0. The call stops and restarts it, and
   // both tasks share one static TCB and stack, so a delete that was still pending when the new task was created corrupted
   // the scheduler lists (IDLE0 stack canary / uxListRemove panic at boot, depending on layout and timing).
